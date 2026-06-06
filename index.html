@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30-Day Deliverables & RAID — Dakar 2026 TEC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06080e;--surf:#0b0e17;--surf2:#101422;--surf3:#161b2e;
+  --border:#1c2238;--border2:#242c42;--border3:#2e3655;
+  --gold:#d4a843;--gold2:#f0c060;--gold-dim:#8a6520;
+  --red:#e04545;--amber:#e89220;--green:#29b566;--blue:#3d92d8;
+  --purple:#8b5fd4;--teal:#1faa8c;--grey:#4a5570;--cyan:#1ab8d4;
+  --text:#dce0ee;--dim:#7080a0;--muted:#38405a;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--disp:'Bebas Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(90deg,rgba(11,14,23,.99),rgba(8,10,18,.99));border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;flex-shrink:0}
+.hdr-left{display:flex;align-items:center;gap:18px}
+.prog{font-family:var(--disp);font-size:22px;letter-spacing:4px;color:var(--gold)}
+.hdiv{width:1px;height:30px;background:var(--border2)}
+.hdr-info{display:flex;flex-direction:column;gap:1px}
+.hdr-title{font-family:var(--disp);font-size:17px;letter-spacing:2px;color:var(--text)}
+.hdr-sub{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.hdr-right{display:flex;align-items:center;gap:20px}
+.hdr-stat{text-align:right}
+.hslbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.hsval{font-family:var(--mono);font-size:11px;color:var(--gold);font-weight:500;margin-top:1px}
+.live{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+
+/* ── TABS ── */
+.top-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surf);padding:0 28px;position:sticky;top:52px;z-index:190;flex-shrink:0}
+.ttab{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:11px 20px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.ttab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.ttab:hover:not(.active){color:var(--dim)}
+
+/* ── PAGE CONTAINERS ── */
+.page{display:none;flex:1;overflow:hidden}
+.page.active{display:flex;flex-direction:column}
+#page-countdown.active{display:flex;flex-direction:column;align-items:center;overflow-y:auto}
+
+/* ══════════════════════ COUNTDOWN ══════════════════════ */
+#page-countdown{padding:40px 28px 36px;gap:32px}
+.cd-prog-title{font-family:var(--disp);font-size:13px;letter-spacing:4px;color:var(--gold-dim);text-transform:uppercase;text-align:center}
+.cd-main{display:flex;align-items:flex-start;gap:6px}
+.cd-unit{display:flex;flex-direction:column;align-items:center}
+.cd-num{font-family:var(--disp);font-size:96px;line-height:1;letter-spacing:4px;color:var(--gold);text-shadow:0 0 40px rgba(212,168,67,.2)}
+.cd-ulbl{font-family:var(--mono);font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+.cd-colon{font-family:var(--disp);font-size:72px;line-height:1;color:var(--border3);padding:0 4px;margin-top:4px;animation:cblink 1s step-end infinite}
+@keyframes cblink{0%,100%{opacity:1}50%{opacity:.1}}
+.cd-date-lbl{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--dim);text-align:center}
+.cd-sec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:860px}
+.cds{background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:18px 20px;text-align:center;position:relative;overflow:hidden}
+.cds::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.cds.drr::before{background:var(--amber)}.cds.tr::before{background:var(--blue)}.cds.veu::before{background:var(--purple)}.cds.cl::before{background:var(--red)}
+.cds-n{font-family:var(--disp);font-size:50px;line-height:1;letter-spacing:2px;margin-bottom:5px}
+.cds.drr .cds-n{color:var(--amber)}.cds.tr .cds-n{color:var(--blue)}.cds.veu .cds-n{color:var(--purple)}.cds.cl .cds-n{color:var(--red)}
+.cds-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+.cds-date{font-family:var(--mono);font-size:9px;color:var(--dim)}
+.cd-note{font-family:var(--mono);font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px}
+
+/* ══════════════════════ GANTT ══════════════════════ */
+.legend-bar{padding:10px 28px;background:var(--surf);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:18px;flex-wrap:wrap;flex-shrink:0}
+.li{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8px;letter-spacing:1px;color:var(--dim);text-transform:uppercase}
+.ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.ldia{width:9px;height:9px;transform:rotate(45deg);flex-shrink:0}
+.lline{width:18px;height:2px;border-radius:1px;flex-shrink:0}
+.sum-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0}
+.sc{background:var(--surf);padding:11px 16px}
+.sc-lbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+.sc-val{font-family:var(--disp);font-size:26px;letter-spacing:1px;line-height:1}
+.sc-sub{font-size:10px;color:var(--dim);margin-top:2px}
+.gantt-wrap{padding:0 28px 32px;flex:1;overflow-y:auto;overflow-x:hidden}
+.sec-lbl{font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:10px;padding:10px 28px 8px;background:var(--bg);flex-shrink:0}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.gsub-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--border3);text-transform:uppercase;padding:5px 12px;background:var(--surf2);border-bottom:1px solid var(--border);border-top:1px solid var(--border)}
+.gscroll{overflow-x:auto;overflow-y:visible}
+.gscroll::-webkit-scrollbar{height:3px}
+.gscroll::-webkit-scrollbar-thumb{background:var(--border2)}
+.gtable{width:100%;min-width:900px;border-collapse:collapse}
+.ghead{position:sticky;top:0;z-index:47}
+.ghead th{background:var(--surf2);border-bottom:1px solid var(--border);font-weight:400;padding:0}
+.th{padding:8px 12px;text-align:left;font-family:var(--mono);font-size:7.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;border-right:1px solid var(--border)}
+.th.w320{width:320px;min-width:320px}.th.w100{width:100px;min-width:100px}.th.w88{width:88px;min-width:88px}.th.w108{width:108px;min-width:108px}
+.dh{display:flex;height:38px}
+.dc{display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid var(--border);font-family:var(--mono);font-size:7.5px;flex-shrink:0;letter-spacing:.5px}
+.dc .dn{color:var(--muted);text-transform:uppercase}
+.dc .dd{color:var(--dim);margin-top:1px;font-size:9px}
+.dc.tdy{background:rgba(212,168,67,.09)}.dc.tdy .dd{color:var(--gold);font-weight:600}.dc.tdy .dn{color:var(--gold-dim)}
+.dc.wknd{background:rgba(255,255,255,.01)}.dc.wknd .dn{color:var(--border2)}
+.dc.wkst{border-left:1px solid var(--border2)}
+.grow{border-bottom:1px solid var(--border);transition:background .12s}
+.grow:hover td{background:rgba(255,255,255,.014)}
+.grow.ov td{background:rgba(224,69,69,.025)}
+.grow.gsec td{background:var(--surf3);padding:5px 12px;font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;border-bottom:1px solid var(--border2)}
+.grow.ioc-section td{background:rgba(212,168,67,.04);border-bottom:1px solid rgba(212,168,67,.15)}
+.grow.ioc-section td:first-child{border-left:2px solid var(--gold)}
+.tdname{padding:7px 12px;border-right:1px solid var(--border);vertical-align:middle;width:320px;min-width:320px}
+.tdid{padding:7px 12px;border-right:1px solid var(--border);vertical-align:middle;white-space:nowrap;width:100px;min-width:100px}
+.tdst{padding:7px 12px;border-right:1px solid var(--border);vertical-align:middle;white-space:nowrap;width:88px;min-width:88px}
+.tdow{padding:7px 12px;border-right:1px solid var(--border);vertical-align:middle;width:108px;min-width:108px}
+.tdbar{padding:0;vertical-align:middle}
+.tname{font-weight:500;color:var(--text);font-size:12px;line-height:1.3}
+.tname.ov{color:var(--red)}.tname.ioc{color:var(--gold2)}
+.twg{display:inline-block;font-family:var(--mono);font-size:7.5px;padding:1px 5px;border-radius:2px;margin-top:2px;letter-spacing:1px}
+.wg-pmo{background:rgba(74,85,112,.15);color:#8090b8;border:1px solid rgba(74,85,112,.25)}
+.wg-vros{background:rgba(31,170,140,.12);color:var(--teal);border:1px solid rgba(31,170,140,.25)}
+.wg-cyber{background:rgba(224,69,69,.12);color:var(--red);border:1px solid rgba(224,69,69,.25)}
+.wg-apps{background:rgba(232,146,32,.12);color:var(--amber);border:1px solid rgba(232,146,32,.25)}
+.wg-telco{background:rgba(61,146,216,.12);color:var(--blue);border:1px solid rgba(61,146,216,.25)}
+.wg-nrg{background:rgba(41,181,102,.12);color:var(--green);border:1px solid rgba(41,181,102,.25)}
+.wg-ioc{background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.25)}
+.id-chip{font-family:var(--mono);font-size:8.5px;color:var(--gold);background:rgba(212,168,67,.07);padding:2px 5px;border-radius:3px;border:1px solid rgba(212,168,67,.15);white-space:nowrap;display:inline-block}
+.id-chip.ioc{color:var(--gold2);background:rgba(240,192,96,.08);border-color:rgba(240,192,96,.2)}
+.stat{font-family:var(--mono);font-size:8.5px;padding:2px 6px;border-radius:3px;font-weight:500;white-space:nowrap;display:inline-block}
+.s-ov{background:rgba(224,69,69,.12);color:var(--red);border:1px solid rgba(224,69,69,.2)}
+.s-pr{background:rgba(232,146,32,.12);color:var(--amber);border:1px solid rgba(232,146,32,.2)}
+.s-ns{background:rgba(74,85,112,.1);color:#7080a0;border:1px solid rgba(74,85,112,.2)}
+.s-rs{background:rgba(212,168,67,.1);color:var(--gold);border:1px solid rgba(212,168,67,.2)}
+.s-tr{background:rgba(61,146,216,.1);color:var(--blue);border:1px solid rgba(61,146,216,.2)}
+.owner{font-family:var(--mono);font-size:8.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px}
+.bar-canvas{display:flex;height:38px;align-items:center;position:relative}
+.dslot{flex-shrink:0;height:38px;border-right:1px solid rgba(28,34,56,.45);position:relative}
+.dslot.wknd{background:rgba(255,255,255,.007)}.dslot.wkst{border-left:1px solid rgba(36,44,66,.7)}.dslot.tdl{border-right:1px solid rgba(212,168,67,.3)}
+.gbar{position:absolute;height:14px;border-radius:3px;top:50%;transform:translateY(-50%);z-index:2;cursor:pointer;transition:filter .12s}
+.gbar:hover{filter:brightness(1.3)}
+.bar-pmo{background:linear-gradient(90deg,#3a4260,#4a5270);border:1px solid rgba(74,82,112,.4)}
+.bar-vros{background:linear-gradient(90deg,#107860,#1faa8c);border:1px solid rgba(31,170,140,.35)}
+.bar-cyber{background:linear-gradient(90deg,#b03030,#e04545);border:1px solid rgba(224,69,69,.4)}
+.bar-apps{background:linear-gradient(90deg,#a06010,#e89220);border:1px solid rgba(232,146,32,.4)}
+.bar-telco{background:linear-gradient(90deg,#2070b0,#3d92d8);border:1px solid rgba(61,146,216,.35)}
+.bar-nrg{background:linear-gradient(90deg,#1a8040,#29b566);border:1px solid rgba(41,181,102,.35)}
+.bar-ov{background:linear-gradient(90deg,#701818,#b03030);border:1px solid rgba(176,48,48,.45);opacity:.8}
+.bar-ioc{background:linear-gradient(90deg,#8a6010,#d4a843);border:1px solid rgba(212,168,67,.4)}
+.blbl{position:absolute;left:5px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:7.5px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;z-index:3}
+.ms{position:absolute;width:12px;height:12px;transform:translateY(-50%) rotate(45deg);top:50%;z-index:4;cursor:pointer;transition:transform .12s}
+.ms:hover{transform:translateY(-50%) rotate(45deg) scale(1.4)}
+.ms-gold{background:var(--gold);box-shadow:0 0 7px rgba(212,168,67,.5)}
+.ms-red{background:var(--red);box-shadow:0 0 7px rgba(224,69,69,.5)}
+.ms-gold2{background:var(--gold2);box-shadow:0 0 10px rgba(240,192,96,.6)}
+.today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--gold);z-index:5;pointer-events:none}
+.today-line::before{content:'TODAY';position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:7px;color:var(--gold);letter-spacing:1.5px;white-space:nowrap}
+
+/* ══════════════════════ RAID ══════════════════════ */
+#page-raid{padding:22px 28px 36px;flex-direction:column;gap:18px;overflow-y:auto}
+#page-raid.active{display:flex}
+.raid-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.rk{background:var(--surf);border:1px solid var(--border);border-radius:7px;padding:13px 15px;position:relative;overflow:hidden}
+.rk::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.rk.red::after{background:var(--red)}.rk.amb::after{background:var(--amber)}.rk.grn::after{background:var(--green)}.rk.blu::after{background:var(--blue)}.rk.gld::after{background:var(--gold)}
+.rk-lbl{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.rk-val{font-family:var(--disp);font-size:34px;line-height:1}
+.rk.red .rk-val{color:var(--red)}.rk.amb .rk-val{color:var(--amber)}.rk.grn .rk-val{color:var(--green)}.rk.blu .rk-val{color:var(--blue)}.rk.gld .rk-val{color:var(--gold)}
+.rk-sub{font-size:10px;color:var(--dim);margin-top:2px}
+/* Risk section headers */
+.risk-section-hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:6px 6px 0 0;border:1px solid var(--border);border-bottom:none}
+.risk-section-hdr.non-cyber{background:linear-gradient(90deg,rgba(22,27,46,.9),rgba(16,20,34,.9));border-color:rgba(232,146,32,.2)}
+.risk-section-hdr.cyber{background:linear-gradient(90deg,rgba(30,10,14,.9),rgba(16,20,34,.9));border-color:rgba(224,69,69,.25)}
+.rsh-icon{font-size:18px}
+.rsh-text{display:flex;flex-direction:column;gap:1px}
+.rsh-title{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+.non-cyber .rsh-title{color:var(--amber)}
+.cyber .rsh-title{color:var(--red)}
+.rsh-sub{font-family:var(--mono);font-size:9px;color:var(--dim)}
+.rsh-badge{margin-left:auto;font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:3px;font-weight:600}
+.non-cyber .rsh-badge{background:rgba(232,146,32,.12);color:var(--amber);border:1px solid rgba(232,146,32,.25)}
+.cyber .rsh-badge{background:rgba(224,69,69,.12);color:var(--red);border:1px solid rgba(224,69,69,.25)}
+/* Raid panel */
+.rpanel{background:var(--surf);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:6px}
+.rpanel.cyber-panel{border-color:rgba(224,69,69,.2)}
+.rpanel.non-cyber-panel{border-color:rgba(232,146,32,.18)}
+.rp-hdr{background:var(--surf2);border-bottom:1px solid var(--border);padding:9px 15px;display:flex;align-items:center;justify-content:space-between}
+.rp-title{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text)}
+.rpbdg{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:3px;font-weight:600}
+.b-red{background:rgba(224,69,69,.12);color:var(--red);border:1px solid rgba(224,69,69,.22)}.b-amb{background:rgba(232,146,32,.12);color:var(--amber);border:1px solid rgba(232,146,32,.22)}.b-grn{background:rgba(41,181,102,.12);color:var(--green);border:1px solid rgba(41,181,102,.22)}.b-blu{background:rgba(61,146,216,.12);color:var(--blue);border:1px solid rgba(61,146,216,.22)}.b-gld{background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.22)}.b-gy{background:rgba(74,85,112,.12);color:var(--grey);border:1px solid rgba(74,85,112,.22)}
+.rtabs{display:flex;gap:2px;padding:8px 12px 0;background:var(--surf2);border-bottom:1px solid var(--border)}
+.rtab{font-family:var(--mono);font-size:9px;padding:5px 12px;border-radius:4px 4px 0 0;cursor:pointer;color:var(--muted);border:1px solid transparent;border-bottom:none;transition:all .12s;letter-spacing:1px;user-select:none}
+.rtab.active{background:var(--surf);color:var(--text);border-color:var(--border);margin-bottom:-1px}
+.rscroll{max-height:480px;overflow-y:auto}
+.rscroll::-webkit-scrollbar{width:3px}
+.rscroll::-webkit-scrollbar-thumb{background:var(--border2)}
+.rtable{width:100%;border-collapse:collapse}
+.rtable th{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:8px 13px;text-align:left;border-bottom:1px solid var(--border);background:var(--surf2);font-weight:400;position:sticky;top:0;z-index:2}
+.rtable td{padding:9px 13px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:11.5px;color:var(--dim)}
+.rtable tr:last-child td{border-bottom:none}
+.rtable tr:hover td{background:rgba(255,255,255,.012)}
+/* RISK RATING HEAT */
+.rating-bg{display:inline-flex;align-items:center;justify-content:center;width:36px;height:24px;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600}
+.r16{background:rgba(224,69,69,.2);color:#ff7070;border:1px solid rgba(224,69,69,.3)}
+.r12{background:rgba(224,100,40,.18);color:#ff9060;border:1px solid rgba(224,100,40,.28)}
+.r9{background:rgba(232,146,32,.15);color:var(--amber);border:1px solid rgba(232,146,32,.25)}
+.r6{background:rgba(212,168,67,.12);color:var(--gold);border:1px solid rgba(212,168,67,.2)}
+.r4{background:rgba(74,85,112,.12);color:#8090b8;border:1px solid rgba(74,85,112,.2)}
+.r0{color:var(--muted);font-family:var(--mono);font-size:11px}
+.tp{font-family:var(--mono);font-size:8.5px;padding:2px 6px;border-radius:3px;font-weight:600;white-space:nowrap;display:inline-block}
+.tp-risk{background:rgba(224,69,69,.12);color:var(--red);border:1px solid rgba(224,69,69,.2)}
+.tp-iss{background:rgba(232,146,32,.12);color:var(--amber);border:1px solid rgba(232,146,32,.2)}
+.tp-act{background:rgba(61,146,216,.12);color:var(--blue);border:1px solid rgba(61,146,216,.2)}
+.tp-dec{background:rgba(139,95,212,.12);color:var(--purple);border:1px solid rgba(139,95,212,.2)}
+.sp{font-family:var(--mono);font-size:8.5px;padding:2px 6px;border-radius:3px;white-space:nowrap;display:inline-block}
+.sp-act{background:rgba(224,69,69,.1);color:var(--red);border:1px solid rgba(224,69,69,.18)}
+.sp-mit{background:rgba(232,146,32,.1);color:var(--amber);border:1px solid rgba(232,146,32,.18)}
+.sp-acc{background:rgba(74,85,112,.1);color:var(--grey);border:1px solid rgba(74,85,112,.18)}
+.raid-ttl{font-weight:500;color:var(--text);font-size:12px;line-height:1.3;max-width:280px}
+.raid-dsc{font-size:11px;color:var(--muted);line-height:1.4;margin-top:2px;max-width:280px}
+.raid-id{font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(212,168,67,.07);padding:2px 6px;border-radius:3px;border:1px solid rgba(212,168,67,.15);white-space:nowrap;display:inline-block}
+.raid-id.cyber{color:var(--red);background:rgba(224,69,69,.07);border-color:rgba(224,69,69,.18)}
+.due-d{font-family:var(--mono);font-size:9px;white-space:nowrap}
+.due-ov{color:var(--red)}.due-sn{color:var(--amber)}.due-ok{color:var(--blue)}.due-fu{color:var(--dim)}
+/* impact/likelihood matrix mini */
+.lik-imp{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap}
+/* Impacted service */
+.svc-tag{font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:2px;background:rgba(74,85,112,.1);color:var(--grey);border:1px solid rgba(74,85,112,.18);white-space:nowrap;display:inline-block;margin:1px 1px}
+
+/* TOOLTIP */
+.ttp{position:fixed;background:var(--surf3);border:1px solid var(--border2);border-radius:6px;padding:10px 14px;font-size:11px;color:var(--text);z-index:999;pointer-events:none;max-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.6);display:none}
+.ttp-t{font-weight:600;margin-bottom:5px;font-size:12px}
+.ttp-r{display:flex;justify-content:space-between;gap:12px;margin-top:3px}
+.ttp-k{font-family:var(--mono);font-size:8px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.ttp-v{font-family:var(--mono);font-size:9px;color:var(--text)}
+
+/* FOOTER */
+.ftr{border-top:1px solid var(--border);background:var(--surf);padding:9px 28px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;letter-spacing:1px;color:var(--muted);flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <span class="prog">DAKAR 2026</span>
+    <div class="hdiv"></div>
+    <div class="hdr-info">
+      <div class="hdr-title">30-DAY DELIVERABLES &amp; RAID COMMAND</div>
+      <div class="hdr-sub">Technology Programme · TEC PMO · Deloitte · Dakar, Senegal (WAT UTC+0)</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-stat"><div class="hslbl">Today (WAT)</div><div class="hsval">06 JUN 2026</div></div>
+    <div class="hdr-stat"><div class="hslbl">Window</div><div class="hsval">06 Jun → 06 Jul 2026</div></div>
+    <div class="hdr-stat"><div class="hslbl">Data</div><div class="hsval">SMARTSHEET LIVE</div></div>
+    <div class="hdr-stat"><div class="hslbl">Last Sync</div><div class="hsval" id="last-sync">Loading…</div></div>
+    <div class="live"></div>
+  </div>
+</div>
+
+<div class="top-tabs">
+  <div class="ttab active" onclick="sp('countdown')">⏱ Games Countdown</div>
+  <div class="ttab" onclick="sp('gantt')">📅 30-Day Gantt</div>
+  <div class="ttab" onclick="sp('raid')">⚠ RAID Log</div>
+</div>
+
+<!-- ══ COUNTDOWN ══ -->
+<div id="page-countdown" class="page active">
+  <div class="cd-prog-title">Dakar 2026 Youth Olympic Games · Opening Ceremony</div>
+  <div class="cd-main">
+    <div class="cd-unit"><div class="cd-num" id="cd-d">–</div><div class="cd-ulbl">Days</div></div>
+    <div class="cd-colon">:</div>
+    <div class="cd-unit"><div class="cd-num" id="cd-h">–</div><div class="cd-ulbl">Hours</div></div>
+    <div class="cd-colon">:</div>
+    <div class="cd-unit"><div class="cd-num" id="cd-m">–</div><div class="cd-ulbl">Minutes</div></div>
+    <div class="cd-colon">:</div>
+    <div class="cd-unit"><div class="cd-num" id="cd-s">–</div><div class="cd-ulbl">Seconds</div></div>
+  </div>
+  <div class="cd-date-lbl">31 October 2026 · 20:00 WAT · Dakar, Senegal</div>
+  <div class="cd-sec-grid">
+    <div class="cds drr"><div class="cds-lbl">DRR POC Window</div><div class="cds-n" id="cd2-drr">–</div><div class="cds-date">Opens 15 Jun 2026</div></div>
+    <div class="cds tr"><div class="cds-lbl">Technology Rehearsal</div><div class="cds-n" id="cd2-tr">–</div><div class="cds-date">07 Sep 2026</div></div>
+    <div class="cds veu"><div class="cds-lbl">Venue Exclusive Use</div><div class="cds-n" id="cd2-veu">–</div><div class="cds-date">31 Aug 2026</div></div>
+    <div class="cds cl"><div class="cds-lbl">Closing Ceremony</div><div class="cds-n" id="cd2-cl">–</div><div class="cds-date">13 Nov 2026</div></div>
+  </div>
+  <div class="cd-note">All times in WAT (West Africa Time, UTC+0) · Dakar, Senegal · Opening: 31 Oct 2026 · 20:00 local</div>
+</div>
+
+<!-- ══ GANTT ══ -->
+<div id="page-gantt" class="page">
+  <div class="legend-bar">
+    <div class="li"><div class="ldot" style="background:var(--gold)"></div>Level 1 Milestone (IOC)</div>
+    <div class="li"><div class="ldot" style="background:#4a5270"></div>PMO</div>
+    <div class="li"><div class="ldot" style="background:var(--teal)"></div>SONATEL VROS</div>
+    <div class="li"><div class="ldot" style="background:var(--red)"></div>Cyber</div>
+    <div class="li"><div class="ldot" style="background:var(--amber)"></div>Applications</div>
+    <div class="li"><div class="ldot" style="background:var(--blue)"></div>Telecoms</div>
+    <div class="li"><div class="ldot" style="background:var(--green)"></div>NRG</div>
+    <div class="li"><div class="ldia" style="background:var(--gold2)"></div>L1 Milestone ◆</div>
+    <div class="li"><div class="ldia" style="background:var(--red)"></div>Overdue ◆</div>
+    <div class="li"><div class="lline" style="background:var(--gold)"></div>Today 06 Jun (WAT)</div>
+  </div>
+  <div class="sum-strip">
+    <div class="sc"><div class="sc-lbl">L1 Milestones</div><div class="sc-val" style="color:var(--gold2)">5</div><div class="sc-sub">IOC reporting items</div></div>
+    <div class="sc"><div class="sc-lbl">Total in Window</div><div class="sc-val" style="color:var(--text)">28</div><div class="sc-sub">All deliverables</div></div>
+    <div class="sc"><div class="sc-lbl">Overdue</div><div class="sc-val" style="color:var(--red)">6</div><div class="sc-sub">Escalation required</div></div>
+    <div class="sc"><div class="sc-lbl">In Progress</div><div class="sc-val" style="color:var(--amber)">7</div><div class="sc-sub">Active delivery</div></div>
+    <div class="sc"><div class="sc-lbl">Not Started</div><div class="sc-val" style="color:var(--grey)">9</div><div class="sc-sub">At risk of slip</div></div>
+    <div class="sc"><div class="sc-lbl">Rescheduled</div><div class="sc-val" style="color:var(--gold)">2</div><div class="sc-sub">Window opened</div></div>
+  </div>
+  <div class="sec-lbl">06 June → 06 July 2026 · Dakar WAT</div>
+  <div class="gantt-wrap">
+    <div class="gscroll"><div id="gantt-container"></div></div>
+  </div>
+</div>
+
+<!-- ══ RAID ══ -->
+<div id="page-raid" class="page">
+  <div class="raid-kpis">
+    <div class="rk red"><div class="rk-lbl">Active / Open</div><div class="rk-val">19</div><div class="rk-sub">Require action now</div></div>
+    <div class="rk amb"><div class="rk-lbl">Ongoing Mitigation</div><div class="rk-val">10</div><div class="rk-sub">Being addressed</div></div>
+    <div class="rk grn"><div class="rk-lbl">Accepted</div><div class="rk-val">1</div><div class="rk-sub">Risk accepted</div></div>
+    <div class="rk gld"><div class="rk-lbl">Total Open Items</div><div class="rk-val">59</div><div class="rk-sub">Live RAID log</div></div>
+    <div class="rk blu"><div class="rk-lbl">Last Updated</div><div class="rk-val" style="font-size:20px;margin-top:4px">06 JUN</div><div class="rk-sub">Today (WAT) · Live</div></div>
+  </div>
+
+  <!-- RISK GROUP 1: Non-Cyber, highest rated -->
+  <div>
+    <div class="risk-section-hdr non-cyber">
+      <span class="rsh-icon">⚡</span>
+      <div class="rsh-text">
+        <span class="rsh-title">Programme Risks — Highest Rated (Non-Cyber)</span>
+        <span class="rsh-sub">Sorted by risk rating (Impact × Likelihood) · Active &amp; Ongoing Mitigation · Cyber excluded</span>
+      </div>
+      <span class="rsh-badge">Top Risks · Rated</span>
+    </div>
+    <div class="rpanel non-cyber-panel">
+      <table class="rtable">
+        <thead><tr><th>ID</th><th style="min-width:260px">Risk Title</th><th>Status</th><th>Rating</th><th>I×L</th><th>Owner</th><th>Due</th><th>Path to Green</th></tr></thead>
+        <tbody id="risk-noncyber-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RISK GROUP 2: Cyber, top 5 -->
+  <div>
+    <div class="risk-section-hdr cyber">
+      <span class="rsh-icon">🔐</span>
+      <div class="rsh-text">
+        <span class="rsh-title">Cyber Security Risk Log — Top 5</span>
+        <span class="rsh-sub">Owner: Yakhya Diop (Cyber PnP) · D26.CYB.* reference items · Sorted by severity</span>
+      </div>
+      <span class="rsh-badge">Cyber Only · Top 5</span>
+    </div>
+    <div class="rpanel cyber-panel">
+      <table class="rtable">
+        <thead><tr><th>ID</th><th style="min-width:260px">Risk Title</th><th>Status</th><th>Rating</th><th>I×L</th><th>Owner</th><th>Due</th><th>Path to Green</th></tr></thead>
+        <tbody id="risk-cyber-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- RISK GROUP 3: All remaining programme risks -->
+  <div>
+    <div class="risk-section-hdr non-cyber" style="border-color:rgba(74,85,112,.25);background:linear-gradient(90deg,rgba(16,18,28,.9),rgba(13,16,26,.9))">
+      <span class="rsh-icon">📋</span>
+      <div class="rsh-text">
+        <span class="rsh-title" style="color:var(--dim)">All Remaining Programme Risks</span>
+        <span class="rsh-sub">Excluding top 5 non-cyber &amp; top 5 cyber already shown above · Sorted by rating</span>
+      </div>
+      <span class="rsh-badge" style="background:rgba(74,85,112,.12);color:var(--grey);border-color:rgba(74,85,112,.25)">Remaining Open Risks</span>
+    </div>
+    <div class="rpanel" style="border-color:rgba(74,85,112,.2)">
+      <table class="rtable">
+        <thead><tr><th>ID</th><th style="min-width:260px">Risk Title</th><th>Status</th><th>Rating</th><th>I×L</th><th>Owner</th><th>Due</th><th>Path to Green</th></tr></thead>
+        <tbody id="risk-remaining-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FULL RAID LOG (non-risk, non-closed) -->
+  <div class="rpanel">
+    <div class="rp-hdr">
+      <span class="rp-title">Issues, Actions &amp; Decisions — All Open Items (Risks shown above)</span>
+      <span class="rpbdg b-red">Closed items hidden · Sheet 7427364280553348 · 06 Jun 2026</span>
+    </div>
+    <div class="rtabs" id="raidTabs">
+      <div class="rtab active" onclick="filterRaid(this,'all')">All Open</div>
+      <div class="rtab" onclick="filterRaid(this,'Issue')">🟡 Issues</div>
+      <div class="rtab" onclick="filterRaid(this,'Action Item')">🔵 Actions</div>
+      <div class="rtab" onclick="filterRaid(this,'Decision')">🟣 Decisions</div>
+    </div>
+    <div class="rscroll">
+      <table class="rtable">
+        <thead><tr><th>ID</th><th style="min-width:260px">Title &amp; Description</th><th>Type</th><th>Status</th><th>Rating</th><th>Owner</th><th>Due</th><th>Path to Green</th></tr></thead>
+        <tbody id="raid-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="ttp" id="ttp">
+  <div class="ttp-t" id="ttp-t"></div>
+  <div class="ttp-r"><span class="ttp-k">ID</span><span class="ttp-v" id="ttp-id"></span></div>
+  <div class="ttp-r"><span class="ttp-k">Start</span><span class="ttp-v" id="ttp-s"></span></div>
+  <div class="ttp-r"><span class="ttp-k">Due</span><span class="ttp-v" id="ttp-e"></span></div>
+  <div class="ttp-r"><span class="ttp-k">Status</span><span class="ttp-v" id="ttp-st"></span></div>
+  <div class="ttp-r"><span class="ttp-k">Owner</span><span class="ttp-v" id="ttp-o"></span></div>
+</div>
+
+<div class="ftr">
+  <span>DAKAR 2026 TEC · DELOITTE PMO · CONFIDENTIAL — IOC / YOGOC / GLOBAL LEADERSHIP</span>
+  <span>TMS · MASTERSHEET · RAID 7427364280553348 · VROS SONATEL ×9 · VIS ×9 · WAT 06 JUN 2026</span>
+</div>
+
+<script>
+// ─── DATE CONSTANTS ── WAT = UTC+0 ──────────────────────────────────────────
+const TODAY     = new Date('2026-06-06T00:00:00Z');
+const WIN_START = new Date('2026-06-06T00:00:00Z');
+const TOTAL_DAYS = 31;
+const DAY_W = 28;
+
+// CORRECTED: Opening Ceremony 31 Oct 2026 20:00 WAT (UTC+0)
+const GAMES_OPEN  = new Date('2026-10-31T20:00:00Z');
+const CLOSING     = new Date('2026-11-13T00:00:00Z');
+const DRR_OPEN    = new Date('2026-06-15T00:00:00Z');
+const TECH_REH    = new Date('2026-09-07T00:00:00Z');
+const VEU         = new Date('2026-08-31T00:00:00Z');
+
+// ─── PAGES ──────────────────────────────────────────────────────────────────
+const PAGES=['countdown','gantt','raid'];
+function sp(id){
+  PAGES.forEach(p=>{document.getElementById('page-'+p).classList.toggle('active',p===id)});
+  document.querySelectorAll('.ttab').forEach((t,i)=>t.classList.toggle('active',PAGES[i]===id));
+}
+
+// ─── COUNTDOWN ──────────────────────────────────────────────────────────────
+function pad(n){return String(n).padStart(2,'0')}
+function daysUntil(d){return Math.max(0,Math.ceil((d-new Date())/864e5))}
+function updateCd(){
+  const now=new Date(), diff=GAMES_OPEN-now;
+  if(diff>0){
+    const d=Math.floor(diff/864e5),h=Math.floor((diff%864e5)/36e5),m=Math.floor((diff%36e5)/6e4),s=Math.floor((diff%6e4)/1e3);
+    document.getElementById('cd-d').textContent=pad(d);document.getElementById('cd-h').textContent=pad(h);
+    document.getElementById('cd-m').textContent=pad(m);document.getElementById('cd-s').textContent=pad(s);
+  }
+  document.getElementById('cd2-drr').textContent=daysUntil(DRR_OPEN);
+  document.getElementById('cd2-tr').textContent=daysUntil(TECH_REH);
+  document.getElementById('cd2-veu').textContent=daysUntil(VEU);
+  document.getElementById('cd2-cl').textContent=daysUntil(CLOSING);
+}
+updateCd();setInterval(updateCd,1000);
+
+// ─── GANTT DATA ──────────────────────────────────────────────────────────────
+// Day offset from 06 Jun 2026 (WAT)
+const GANTT=[
+  // ════ GROUP 1: IOC LEVEL 1 MILESTONES ════
+  {section:'◆  IOC LEVEL 1 MILESTONES — Executive Reporting to IOC / YOGOC', ioc:true},
+  {id:'D26.TEC.034',name:'Information Systems Freeze',wg:'IOC L1',bc:'bar-ioc',status:'Not Started',sc:'s-ns',owner:'—',s:0,e:24,ms:true,ioc:true,ov:false,sl:'06 Jun 2026',el:'30 Jun 2026'},
+  {id:'D26.TEC.234',name:'Go-Live — Ticketing Platform Operational',wg:'IOC L1',bc:'bar-ioc',status:'Not Started',sc:'s-ns',owner:'S. Samake',s:0,e:0,ms:true,ioc:true,ov:false,sl:'06 Jun 2026',el:'06 Jun 2026'},
+  {id:'D26.TEC.416',name:'ITP Dependency & Validation V2',wg:'IOC L1',bc:'bar-ioc',status:'Not Started',sc:'s-ns',owner:'Charles LAW',s:0,e:13,ms:true,ioc:true,ov:false,sl:'Mar 2026',el:'19 Jun 2026'},
+  {id:'D26.TEC.528',name:'VIS Tech Bump-In: YOV (Youth Olympic Village) — Start',wg:'IOC L1',bc:'bar-ioc',status:'Not Started',sc:'s-ns',owner:'Venue Tech',s:24,e:24,ms:true,ioc:true,ov:false,sl:'30 Jun 2026',el:'30 Jun 2026'},
+  {id:'D26.TEC.140',name:'Integrated Schedule Submitted',wg:'IOC L1',bc:'bar-ioc',status:'Not Started',sc:'s-ns',owner:'Charles LAW',s:0,e:30,ms:true,ioc:true,ov:false,sl:'04 May 2026',el:'06 Jul 2026'},
+
+  // ════ GROUP 2: OVERDUE ════
+  {section:'⚠  OVERDUE — Past Deadline · Escalation Required'},
+  {id:'D26.TEC.489',name:'PMR HLD Issued & Validated',wg:'Telecoms',bc:'bar-ov',status:'OVERDUE',sc:'s-ov',owner:'M. Konate',s:-193,e:-1,ms:true,ov:true,sl:'Nov 2025',el:'Nov 2025 ★'},
+  {id:'D26.PNP.001',name:'Cyber Policy & Procedure',wg:'Cyber',bc:'bar-ov',status:'OVERDUE',sc:'s-ov',owner:'Y. Diop',s:-240,e:-1,ms:true,ov:true,sl:'Oct 2025',el:'Oct 2025 ★'},
+  {id:'D26.PNP.003',name:'NRG Policy & Procedure',wg:'Energy',bc:'bar-ov',status:'OVERDUE',sc:'s-ov',owner:'B. Ndiaye',s:-37,e:-1,ms:true,ov:true,sl:'Apr 2026',el:'30 Apr 2026 ★'},
+  {id:'D26.PNP.024',name:'Telecom Policy & Procedure',wg:'Telecoms',bc:'bar-ov',status:'OVERDUE',sc:'s-ov',owner:'M. Konate',s:-37,e:-1,ms:true,ov:true,sl:'Apr 2026',el:'30 Apr 2026 ★'},
+  {id:'D26.PNP.020',name:'Venue Tech Policy & Procedure',wg:'SONATEL VROS',bc:'bar-ov',status:'OVERDUE',sc:'s-ov',owner:'M. Tsuruta',s:-37,e:-1,ms:true,ov:true,sl:'Apr 2026',el:'30 Apr 2026 ★'},
+  {id:'AI_146',name:'Radio Monitoring Antenna Testing Scope (AI_146)',wg:'Telecoms',bc:'bar-ov',status:'OVERDUE',sc:'s-ov',owner:'M. Tsuruta',s:-1,e:-1,ms:true,ov:true,sl:'31 May',el:'05 Jun 2026 ★'},
+
+  // ════ GROUP 3: SONATEL VROS ════
+  {section:'SONATEL VROS — Venue Rollout Milestones'},
+  {id:'SAW·LLD',name:'LLD TER/LAN IP Final Approved — SAW ◆',wg:'SONATEL VROS',bc:'bar-vros',status:'In Progress',sc:'s-pr',owner:'Saer SOW',s:0,e:0,ms:true,ov:false,sl:'Feb 2026',el:'06 Jun 2026'},
+  {id:'YOV·TER',name:'TER Space Location Agreed — YOV ◆',wg:'SONATEL VROS',bc:'bar-vros',status:'Not Started',sc:'s-ns',owner:'EVI/TEC',s:0,e:0,ms:true,ov:false,sl:'06 Jun',el:'06 Jun 2026'},
+  {id:'CTO·VIGs',name:'CTO — TER Space/Power/Cable Ducts (VIG 69/70/71/43)',wg:'SONATEL VROS',bc:'bar-vros',status:'In Progress',sc:'s-pr',owner:'EVI',s:0,e:2,ms:false,ov:false,sl:'06 Jun',el:'08 Jun 2026'},
+  {id:'CTO·BCN-RF',name:'CTO — TER Cabling Blue + Red Fiber Install',wg:'SONATEL VROS',bc:'bar-vros',status:'Not Started',sc:'s-ns',owner:'Salihou SOW',s:9,e:16,ms:false,ov:false,sl:'15 Jun',el:'22 Jun 2026'},
+  {id:'SAW·LLD-F',name:'LLD TER/LAN IP V2 Final — SAW ◆',wg:'SONATEL VROS',bc:'bar-vros',status:'In Progress',sc:'s-pr',owner:'Saer SOW',s:9,e:9,ms:true,ov:false,sl:'Feb 2026',el:'15 Jun 2026'},
+  {id:'CID·CABLE',name:'CID — TER Cabling Blue + Red Finish ◆',wg:'SONATEL VROS',bc:'bar-vros',status:'Not Started',sc:'s-ns',owner:'Salihou SOW',s:12,e:12,ms:true,ov:false,sl:'06 Jun',el:'18 Jun 2026'},
+  {id:'CED·EQUIP',name:'TER Install TEC Equipment — CED',wg:'SONATEL VROS',bc:'bar-vros',status:'Not Started',sc:'s-ns',owner:'Salihou SOW',s:4,e:9,ms:false,ov:false,sl:'10 Jun',el:'15 Jun 2026'},
+  {id:'COR/DAR/SBW',name:'TER/LAN IP Material Delivery — COR, DAR, SBW',wg:'SONATEL VROS',bc:'bar-vros',status:'In Progress',sc:'s-pr',owner:'Saer SOW',s:1,e:22,ms:false,ov:false,sl:'07 Apr',el:'28 Jun 2026'},
+  {id:'DEX·MAT',name:'TER/LAN IP Material Delivery — DEX',wg:'SONATEL VROS',bc:'bar-vros',status:'In Progress',sc:'s-pr',owner:'Saer SOW',s:1,e:30,ms:false,ov:false,sl:'07 Apr',el:'07 Aug →'},
+  {id:'CED/CID/SAW·75',name:'TER Ready for Tech Rehearsal — CED, CID, SAW ◆',wg:'SONATEL VROS',bc:'bar-vros',status:'Not Started',sc:'s-ns',owner:'Salihou SOW',s:0,e:24,ms:true,ov:false,sl:'Jun 2026',el:'30 Jun 2026 ★'},
+  {id:'CTO·EQUIP',name:'TER Install TEC Equipment — CTO',wg:'SONATEL VROS',bc:'bar-vros',status:'Not Started',sc:'s-ns',owner:'Salihou SOW',s:23,e:27,ms:false,ov:false,sl:'29 Jun',el:'03 Jul 2026'},
+  {id:'CTO·VIG75',name:'TER Ready for Tech Rehearsal — CTO ◆',wg:'SONATEL VROS',bc:'bar-vros',status:'Not Started',sc:'s-ns',owner:'Salihou SOW',s:0,e:27,ms:true,ov:false,sl:'Jun 2026',el:'03 Jul 2026 ★'},
+
+  // ════ GROUP 4: APPLICATIONS ════
+  {section:'APPLICATIONS — Ticketing &amp; GMS Deliverables'},
+  {id:'D26.TEC.232',name:'Test, Launch & Maintenance Support — Ticketing',wg:'Applications',bc:'bar-apps',status:'Not Started',sc:'s-ns',owner:'S. Samake',s:0,e:30,ms:false,ov:false,sl:'06 Jun',el:'06 Jul →'},
+  {id:'Dec_149',name:'Background-Check Module — ACR (Dec_149)',wg:'Applications',bc:'bar-apps',status:'Ongoing',sc:'s-pr',owner:'S. Samake',s:0,e:24,ms:false,ov:false,sl:'22 May',el:'30 Jun 2026'},
+  {id:'Dec_163',name:'SWM Legacy Equipment Validation — Omega ◆',wg:'Applications',bc:'bar-apps',status:'Active',sc:'s-ov',owner:'Ana CRESPO',s:1,e:6,ms:true,ov:true,sl:'07 Jun',el:'12 Jun 2026'},
+  {id:'AI_144',name:'Acknowledge Omega Requirements — All Sub-teams',wg:'Applications',bc:'bar-apps',status:'Active',sc:'s-ov',owner:'Ana CRESPO',s:0,e:0,ms:true,ov:true,sl:'29 May',el:'03 Jun overdue'},
+
+  // ════ GROUP 5: PMO ════
+  {section:'PMO / PROGRAMME — Governance &amp; Scheduling'},
+  {id:'DRR-POC',name:'DRR POC Exercise Window Opens (Telco + Cyber)',wg:'Telecoms',bc:'bar-telco',status:'Rescheduled',sc:'s-rs',owner:'A.T. Badji',s:9,e:30,ms:false,ov:false,sl:'15 Jun',el:'31 Jul 2026 ↺'},
+  {id:'Dec_080',name:'Incident Visibility — Comms Channels Decision',wg:'PMO',bc:'bar-pmo',status:'Active',sc:'s-pr',owner:'O.B.K. Diop',s:20,e:25,ms:true,ov:false,sl:'26 Jun',el:'01 Jul 2026'},
+  {id:'AI_098',name:'Presidential Security Sync — ARTP (AI_098)',wg:'Telecoms',bc:'bar-telco',status:'Active',sc:'s-pr',owner:'C. LAW',s:0,e:24,ms:true,ov:false,sl:'06 Jun',el:'30 Jun 2026'},
+];
+
+// ─── BUILD DAYS ──────────────────────────────────────────────────────────────
+const DAYS=[];
+for(let i=0;i<TOTAL_DAYS;i++){const d=new Date(WIN_START);d.setUTCDate(d.getUTCDate()+i);DAYS.push(d)}
+const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+function renderGantt(){
+  const BW=TOTAL_DAYS*DAY_W;
+  let html=`<table class="gtable"><thead class="ghead"><tr>`;
+  html+=`<th><div class="th w320">Deliverable / Milestone</div></th>`;
+  html+=`<th><div class="th w100">ID</div></th>`;
+  html+=`<th><div class="th w88">Status</div></th>`;
+  html+=`<th><div class="th w108">Owner</div></th>`;
+  html+=`<th style="padding:0"><div class="dh">`;
+  DAYS.forEach((d,i)=>{
+    const wd=d.getUTCDay(),isTdy=i===0,isWknd=wd===0||wd===6,isWkst=wd===1;
+    let cls='dc';if(isTdy)cls+=' tdy';if(isWknd)cls+=' wknd';if(isWkst)cls+=' wkst';
+    html+=`<div class="${cls}" style="width:${DAY_W}px"><span class="dn">${DOW[wd].slice(0,2)}</span><span class="dd">${d.getUTCDate()}</span></div>`;
+  });
+  html+=`</div></th></tr></thead><tbody>`;
+
+  GANTT.forEach((item,idx)=>{
+    if(item.section!==undefined){
+      const iocSec=item.ioc;
+      html+=`<tr class="grow gsec${iocSec?' ioc-section':''}"><td colspan="5">${item.section}</td></tr>`;
+      return;
+    }
+    const rowCls=item.ov?'grow ov':(item.ioc?'grow ioc-section':'grow');
+    const nameExtraCls=item.ov?' ov':item.ioc?' ioc':'';
+    const chipCls=item.ioc?'id-chip ioc':'id-chip';
+    const wgKey=item.ioc?'ioc':wgK(item.wg);
+    html+=`<tr class="${rowCls}">`;
+    html+=`<td class="tdname"><div class="tname${nameExtraCls}">${item.name}</div><span class="twg wg-${wgKey}">${item.wg}</span></td>`;
+    html+=`<td class="tdid"><span class="${chipCls}">${item.id}</span></td>`;
+    html+=`<td class="tdst"><span class="stat ${item.sc}">${item.status}</span></td>`;
+    html+=`<td class="tdow"><div class="owner">${item.owner}</div></td>`;
+    html+=`<td class="tdbar"><div class="bar-canvas" style="width:${BW}px;position:relative">`;
+    DAYS.forEach((d,i)=>{
+      const wd=d.getUTCDay(),isWknd=wd===0||wd===6,isWkst=wd===1,isTdl=i===0;
+      let sc='dslot';if(isWknd)sc+=' wknd';if(isWkst)sc+=' wkst';if(isTdl)sc+=' tdl';
+      html+=`<div class="${sc}" style="width:${DAY_W}px"></div>`;
+    });
+    html+=`<div class="today-line" style="left:0px"></div>`;
+    const bs=Math.max(0,item.s),be=Math.min(TOTAL_DAYS-1,item.e);
+    const barCls=item.ioc?'bar-ioc':item.bc;
+    if(item.ms){
+      const mx=be*DAY_W+DAY_W/2-6;
+      const mcls=item.ov?'ms ms-red':item.ioc?'ms ms-gold2':'ms ms-gold';
+      html+=`<div class="${mcls}" style="left:${mx}px" onmouseenter="showTip(event,${idx})" onmouseleave="hideTip()"></div>`;
+      if(be>bs){const bl=bs*DAY_W+DAY_W/2,bw=(be-bs)*DAY_W;html+=`<div class="${barCls} gbar" style="left:${bl}px;width:${bw}px;height:3px;border-radius:2px;opacity:.4" onmouseenter="showTip(event,${idx})" onmouseleave="hideTip()"></div>`;}
+    } else {
+      const bl=bs*DAY_W,bw=Math.max(DAY_W,(be-bs+1)*DAY_W);
+      html+=`<div class="${barCls} gbar" style="left:${bl}px;width:${bw}px" onmouseenter="showTip(event,${idx})" onmouseleave="hideTip()">`;
+      if(bw>50)html+=`<span class="blbl" style="max-width:${bw-8}px">${item.id}</span>`;
+      html+=`</div>`;
+    }
+    html+=`</div></td></tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('gantt-container').innerHTML=html;
+}
+function wgK(wg){
+  if(wg.includes('PMO')||wg.includes('Arch'))return'pmo';
+  if(wg.includes('SONATEL')||wg.includes('VROS'))return'vros';
+  if(wg.includes('Cyber'))return'cyber';
+  if(wg.includes('App'))return'apps';
+  if(wg.includes('Telco'))return'telco';
+  if(wg.includes('Energy')||wg.includes('NRG'))return'nrg';
+  if(wg.includes('IOC'))return'ioc';
+  return'pmo';
+}
+function showTip(e,idx){
+  const item=GANTT[idx];if(!item||item.section!==undefined)return;
+  const tp=document.getElementById('ttp');
+  document.getElementById('ttp-t').textContent=item.name;document.getElementById('ttp-id').textContent=item.id;
+  document.getElementById('ttp-s').textContent=item.sl||'—';document.getElementById('ttp-e').textContent=item.el||'—';
+  document.getElementById('ttp-st').textContent=item.status;document.getElementById('ttp-o').textContent=item.owner;
+  tp.style.display='block';tp.style.left=(e.clientX+14)+'px';tp.style.top=(e.clientY-10)+'px';
+}
+function hideTip(){document.getElementById('ttp').style.display='none'}
+document.addEventListener('mousemove',e=>{const tp=document.getElementById('ttp');if(tp.style.display==='block'){tp.style.left=(e.clientX+14)+'px';tp.style.top=(e.clientY-10)+'px'}});
+
+// ─── RAID DATA (non-closed only, from Smartsheet) ────────────────────────────
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fd(d){if(!d||d==='—')return'—';const dt=new Date(d+'T00:00:00Z');if(isNaN(dt))return d;return`${dt.getUTCDate()} ${MN[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`}
+function dc2(d){if(!d||d==='—')return'due-fu';const dt=new Date(d+'T00:00:00Z');if(isNaN(dt))return'due-fu';const now=new Date();if(dt<now)return'due-ov';const df=(dt-now)/864e5;return df<=14?'due-sn':'due-ok'}
+function rc(r){if(r>=16)return'r16';if(r>=12)return'r12';if(r>=9)return'r9';if(r>=6)return'r6';if(r>0)return'r4';return'r0'}
+function sc2(s){if(s==='Active')return'sp-act';if(s==='Ongoing Mitigation')return'sp-mit';if(s==='Accepted')return'sp-acc';return'sp-mit'}
+
+// ── NON-CYBER RISKS (sorted by rating desc) ──────────────────────────────────
+const NC_RISKS=[
+  {id:'_022',title:'Transition Plans Not Received for Any Venue',desc:'Potential risk on GAR-JUD and FEN transitions. Compressed transition window not yet formally reconciled.',type:'Risk',status:'Ongoing Mitigation',r:12,imp:4,lik:3,owner:'Ana CRESPO',due:'2025-09-23',p2g:'Detailed transition plan per venue. All venue plans to be provided ASAP.'},
+  {id:'Risk_070',title:'NRG Schedule Compression — Temporary Power',desc:'Detailed venue power designs not progressing in parallel with TPP award. Risk of integration test failures at TV-critical venues.',type:'Risk',status:'Ongoing Mitigation',r:16,imp:4,lik:4,owner:'B. Ndiaye',due:'2026-05-31',p2g:'A1–A7 action plan active. Contingency generator plan by 15 Jun if v1 slips past 7 Jun.'},
+  {id:'Risk_076',title:'Omega T&S Window Compressed — GAR Transition',desc:'Omega needs 2 full days for GAR T&S setup; apparatus certification not formally reconciled in transition schedule.',type:'Risk',status:'Active',r:12,imp:4,lik:3,owner:'Ana CRESPO',due:'2026-07-01',p2g:'Schedule OMEGA GAR setup from hour 8 of 39h transition. Add E2E test milestone before IF sign-off.'},
+  {id:'Risk_086',title:'SOGIP — Resilience, Power & Physical Security',desc:'SOGIP venues exposed to SENELEC grid interruptions. No outage records shared — no monitoring baseline.',type:'Risk',status:'Ongoing Mitigation',r:12,imp:4,lik:3,owner:'B. Ndiaye',due:'2026-05-30',p2g:'Monthly outage reporting. Formal resilience assessment per venue. Integrate into NRG workstream.'},
+  {id:'Risk_133',title:'Ticketing Soft Launch — Compressed UAT Window',desc:'Ticketing soft launch 5 Jul with UATs ending 3 Jul. Cyber testing report outstanding. Minimal contingency.',type:'Risk',status:'Active',r:12,imp:4,lik:3,owner:'Charles LAW',due:'2026-07-03',p2g:'Cyber report received; critical/major resolved; UAT closure 3 Jul; go/no-go documented.'},
+  {id:'Risk_135',title:'PNP Backlog — 42 of 48 PNPs Not Started',desc:'42 PNPs either not started or drafting. Threatens readiness for tabletop (15 Jul) and DRR (1 Jun).',type:'Risk',status:'Active',r:16,imp:4,lik:4,owner:'Arthur Blondel',due:'2026-05-26',p2g:'Detailed PNP delivery plan published. 42 PNPs assigned with dates. Weekly tracker in TEC Coord.'},
+  {id:'Risk_085',title:'SOGIP — Technical Capacity & Sizing',desc:'SOGIP venues not confirmed adequate for Games-time technology load. Diamniadio cluster at risk.',type:'Risk',status:'Ongoing Mitigation',r:9,imp:3,lik:3,owner:'M. Konate',due:'2026-05-16',p2g:'Confirm capacity validation (power, network, bandwidth) per venue.'},
+  {id:'Risk_087',title:'SOGIP — Governance & SLA Framework',desc:'VUA for SOGIP targeted March 2026 not confirmed signed. SLAs and escalation paths not formalised.',type:'Risk',status:'Active',r:9,imp:3,lik:3,owner:'Adja T. Badji',due:'2026-05-09',p2g:'Confirm VUA signature. Define operational SLAs. Formalise joint governance model.'},
+].sort((a,b)=>b.r-a.r);
+
+// ── CYBER RISKS (top 5 by severity) ──────────────────────────────────────────
+const CY_RISKS=[
+  {id:'Risk_156',ref:'D26.CYB.CSOC.004',title:'Limited Visibility — Pending Security Tooling',desc:'Key tools not fully deployed: Check Point EDR, SIEM, log onboarding from cloud and network sources. CSOC has blind spots.',type:'Risk',status:'Active',r:0,imp:4,lik:'TBD',owner:'Yakhya Diop',due:'2026-06-22',p2g:'Finalise EDR rollout. Complete SIEM deployment. Onboard priority log sources (Entra ID, M365, firewall, EDR).'},
+  {id:'Risk_157',ref:'D26.CYB.VULN.001',title:'Zero-Day / Supply Chain Attack Exposure',desc:'Internet-facing and cloud services exposed to zero-day vulnerabilities and supply-chain attacks.',type:'Risk',status:'Active',r:12,imp:4,lik:3,owner:'Yakhya Diop',due:'2026-06-15',p2g:'Apply virtual patching / WAF. Assess critical SaaS partners and enforce minimum security requirements.'},
+  {id:'Issue_158',ref:'D26.CYB.VULN.002',title:'Delay in Vulnerability Remediation Process',desc:'Vulnerability tracking workflow experiencing significant delays — known vulnerabilities remain open too long.',type:'Issue',status:'Ongoing Mitigation',r:12,imp:4,lik:3,owner:'Yakhya Diop',due:'2026-06-10',p2g:'Define SLAs by severity. Clarify ownership. Add escalation rules for overdue critical tickets.'},
+  {id:'Risk_154',ref:'D26.CYB.CSOC.002',title:'CSOC Currently Understaffed',desc:'CSOC lacks sufficient analysts for detection, triage and response at required tempo.',type:'Risk',status:'Active',r:0,imp:4,lik:'TBD',owner:'Yakhya Diop',due:'2026-06-22',p2g:'Quantify staffing gap. Accelerate recruitment. Bring in surge/managed-service support.'},
+  {id:'Risk_155',ref:'D26.CYB.CSOC.003',title:'CSOC Not Operating 24/7',desc:'Outside staffed hours there is no live monitoring or response capability — environment exposed to undetected intrusions.',type:'Risk',status:'Ongoing Mitigation',r:0,imp:4,lik:'TBD',owner:'Yakhya Diop',due:'2026-08-01',p2g:'Define and resource 24/7 shift model. Stand up on-call escalation. Operational readiness validation before declaring 24/7.'},
+];
+
+
+// ── REMAINING PROGRAMME RISKS (after top-5 non-cyber and top-5 cyber excluded) ──
+const EXCL_NC = NC_RISKS.slice(0,5).map(r=>r.id);
+const EXCL_CY = CY_RISKS.map(r=>r.id);
+// All non-cyber risks not in top-5
+const REMAINING_RISKS = [
+  {id:'Risk_133',title:'Ticketing Soft Launch — Compressed UAT Window',desc:'Soft launch 5 Jul, UATs ending 3 Jul. Cyber testing report outstanding. Minimal contingency.',type:'Risk',status:'Active',r:12,imp:4,lik:3,owner:'Charles LAW',due:'2026-07-03',p2g:'Cyber report received; critical/major resolved; go/no-go documented.'},
+  {id:'Risk_085',title:'SOGIP — Technical Capacity & Sizing',desc:'Diamniadio cluster venues not confirmed adequate for Games-time technology load.',type:'Risk',status:'Ongoing Mitigation',r:9,imp:3,lik:3,owner:'M. Konate',due:'2026-05-16',p2g:'Confirm capacity validation per venue.'},
+  {id:'Risk_087',title:'SOGIP — Governance & SLA Framework',desc:'VUA for SOGIP targeted March 2026. SLAs, escalation paths, maintenance response not formalised.',type:'Risk',status:'Active',r:9,imp:3,lik:3,owner:'Adja T. Badji',due:'2026-05-09',p2g:'Confirm VUA signature. Define operational SLAs. Formalise joint governance model.'},
+  {id:'Risk_044',title:'Delays on DST System Availability',desc:'Background check application not deployed with ACR Go-Live. Migration to Apsara Stack in progress.',type:'Risk',status:'Ongoing Mitigation',r:0,imp:null,lik:null,owner:'S. Samake',due:'2026-05-18',p2g:'Migrate to Apsara Stack.'},
+  {id:'Risk_061',title:'Test & Tag FF&E',desc:'Test & Tag furniture, fixtures and equipment not yet confirmed for venue delivery.',type:'Risk',status:'Active',r:0,imp:4,lik:null,owner:'Fatou FALL',due:'2026-01-26',p2g:'Confirm FF&E delivery schedule with COJOJ.'},
+  {id:'Risk_096',title:'Stakeholder Frequency Portal Closure 31 May',desc:'Several stakeholders not yet submitted frequency requests. Portal closed — late requests case-by-case only.',type:'Risk',status:'Active',r:0,imp:3,lik:3,owner:'Fatou FALL',due:'2026-05-25',p2g:'Weekly relance to all stakeholders. Late-request escalation path defined.'},
+  {id:'Risk_106',title:'Frequency Fees Payment — D26 Stakeholders',desc:'Fees payment not yet confirmed for Dakar 2026 stakeholders. Risk of mandatory payment demands.',type:'Risk',status:'Active',r:0,imp:null,lik:null,owner:'Fatou FALL',due:'2026-04-30',p2g:'Issue stakeholders fees letter.'},
+  {id:'Risk_109',title:'Mobile Coverage Gaps at Competition Venues',desc:'Esspresso partnership signed but delivery not validated venue-by-venue. Risk of service degradation during Games.',type:'Risk',status:'Active',r:0,imp:3,lik:3,owner:'I. Diallo',due:'2026-08-01',p2g:'Venue-by-venue coverage validation drive tests. Align all operators on SIM prioritisation.'},
+  {id:'Risk_110',title:'Check Point Firewall Integration Testing — Equipment Loss',desc:'Difficulties during Checkpoint integration testing. One piece of equipment lost. Tests replanned with Sonatel.',type:'Risk',status:'Active',r:0,imp:3,lik:3,owner:'M.B. DIA',due:'2026-05-31',p2g:'Bachir to coordinate replanned tests. New dates committed. Equipment replacement sourced.'},
+  {id:'Risk_126',title:'SENUM MDM Usage Compatibility',desc:'Confirm if GAIA can use SENUM MDM. Confirm if new MDM needed if Apsara used for Streamwide deployment.',type:'Risk',status:'Active',r:0,imp:null,lik:null,owner:'I. Diallo',due:'2026-05-31',p2g:'Tripartite meeting COJOJ/GAIA/SENUM planned.'},
+  {id:'Risk_127',title:'Reduction of PMR Terminals & Accessories',desc:'New budget reduction impacting PMR device and multi-port charger quantities.',type:'Risk',status:'Active',r:0,imp:null,lik:null,owner:'I. Diallo',due:'2026-05-31',p2g:'Confirm revised quantities. PMR devices and chargers replanned.'},
+  {id:'Risk_129',title:'PnP Slippage on Tech Scope',desc:'Tech function behind schedule on PnP deliverables. Outstanding PnPs not yet shared with downstream impacted teams.',type:'Risk',status:'Ongoing Mitigation',r:0,imp:3,lik:3,owner:'Adja T. Badji',due:'2026-05-19',p2g:'Drive immediate completion. Chase SPs for outstanding PnP confirmations.'},
+  {id:'Risk_136',title:'PMR Solution Hosting Compatibility — SENUM Data Centre',desc:'Hosting of PMR on SENUM data centre raises compatibility concerns. Tripartite meeting 8 Jun.',type:'Risk',status:'Active',r:0,imp:4,lik:3,owner:'M. Konate',due:'2026-06-08',p2g:'8 Jun meeting to confirm compatibility. PMR architecture locked.'},
+  {id:'Risk_137',title:'Torch Tower Mobile Connectivity — VR & Video Upload',desc:'OFX partial site list. Satellite exclusivity blocks fallback. APN free provision pending confirmation.',type:'Risk',status:'Active',r:0,imp:3,lik:3,owner:'M. Konate',due:'2026-05-31',p2g:'Complete venue list from OFX. Senum coverage study. Sonatel APN commitment confirmed.'},
+  {id:'Risk_139',title:'ARTP Spectrum Monitoring Contract — Staffing Gap',desc:'Tonum contract not yet signed. ARTP planning junior hire for senior spectrum manager role. Tax exemption side letter pending.',type:'Risk',status:'Active',r:0,imp:3,lik:3,owner:'O.B.K. Diop',due:'2026-06-15',p2g:'Tonum contract signed. Senior spectrum manager confirmed. Tax exemption submitted.'},
+  {id:'Risk_151',title:'Incomplete Internal Risk Assessment — COJOJ Perimeter',desc:'Cybersecurity risk assessment of COJOJ internal perimeter incomplete. Critical assets not fully identified.',type:'Risk',status:'Ongoing Mitigation',r:6,imp:3,lik:2,owner:'Yakhya Diop',due:'2026-06-05',p2g:'Map all COJOJ assets. Interview each Directorate to capture business risks.'},
+  {id:'Risk_152',title:'Cyber Risk Assessment of Delivery Partners Not Conducted',desc:'Delivery partners not yet assessed. Insecure partner could serve as attack vector into COJOJ environment.',type:'Risk',status:'Active',r:4,imp:2,lik:2,owner:'Yakhya Diop',due:'2026-07-17',p2g:'Inventory delivery partners and access levels. Define minimum contractual cyber requirements.'},
+  {id:'Risk_153',title:'Sonatel Logs Not Shared With CSOC',desc:'Sonatel not yet forwarding security/network logs to COJOJ CSOC. Discussions ongoing.',type:'Risk',status:'Ongoing Mitigation',r:6,imp:2,lik:3,owner:'Yakhya Diop',due:'2026-06-17',p2g:'Conclude log-sharing scope discussions with Sonatel. Formalise in Sonatel SLA. Test ingestion.'},
+].sort((a,b)=>b.r-a.r);
+
+// ── FULL RAID (non-risk, non-closed) ─────────────────────────────────────────
+const RAID=[
+  {id:'AI_082',title:'Venue Staffing & Move-in Timeline Not Published',desc:'Phased move-in schedule not formally published. Too vague for travel, accommodation, resource planning.',type:'Action Item',status:'Active',r:6,owner:'Arthur Blondel',due:'2026-05-30',p2g:'Publish formal staffing schedule with confirmed dates per phase.'},
+  {id:'AI_098',title:'Presidential Security Synchronisation Meeting',desc:'Meeting with ARTP and security forces to synchronise frequency allocation with presidential security.',type:'Action Item',status:'Active',r:0,owner:'Charles LAW',due:'2026-06-30',p2g:'Meeting scheduled and held; minutes logged; frequency plan aligned.'},
+  {id:'AI_105',title:'Publish Change Request Form',desc:'Publish and present Change Request form after Misaki validation. Mini-training to be delivered.',type:'Action Item',status:'Active',r:0,owner:'Soufiane MAAKOUK',due:'2026-05-01',p2g:'Misaki validation obtained; form published; mini-training delivered.'},
+  {id:'AI_121',title:'SENUM HLD Input List & Pre-collect Data',desc:'Request list for HLD production; start pre-collection while awaiting DCMP authorisation.',type:'Action Item',status:'Ongoing Mitigation',r:0,owner:'M. Konate',due:'2026-05-02',p2g:'Input list received from Djiby; data ready for HLD once DCMP lands.'},
+  {id:'AI_122',title:'SIM Prioritisation Validation',desc:'Obtain confirmation of SIM prioritisation across all telecom operators and organise alignment meeting.',type:'Action Item',status:'Ongoing Mitigation',r:0,owner:'M. Konate',due:'2026-04-29',p2g:'Email sent; alignment meeting scheduled; operator confirmations logged.'},
+  {id:'AI_123',title:'TOC Resource Mobilisation Request',desc:'Formal email specifying TOC resource needs, mobilisation dates and expected operationalisation duration.',type:'Action Item',status:'Ongoing Mitigation',r:0,owner:'Adja T. Badji',due:'2026-05-06',p2g:'Email sent; resource needs acknowledged; mobilisation pipeline locked.'},
+  {id:'AI_143',title:'Omega TV Graphics Testing Strategy',desc:'Omega changed to two-phase testing. Meeting with Mamadou re telecom architecture implications.',type:'Action Item',status:'Active',r:0,owner:'Ana CRESPO',due:'2026-05-26',p2g:'Testing strategy aligned; dates and architecture requirements documented.'},
+  {id:'AI_144',title:'Acknowledge Omega Requirements — All TEC Sub-teams',desc:'All sub-teams to acknowledge Omega requirements and feed back gaps. Energy done; others pending.',type:'Action Item',status:'Active',r:0,owner:'Ana CRESPO',due:'2026-06-03',p2g:'Requirements acknowledged; gaps logged; delivery plans aligned.'},
+  {id:'AI_146',title:'Radio Monitoring Antenna Testing Scope',desc:'30-min call: Charles, Misaki, Mamadou to define venues for radio monitoring antenna testing in tech rehearsal.',type:'Action Item',status:'Active',r:0,owner:'Misaki TSURUTA',due:'2026-06-05',p2g:'Call held; scope defined per venue; VTMs briefed.'},
+  {id:'AI_147',title:'SENUM Data Centre Maintenance Reports',desc:'Request maintenance reports from SENUM to monitor tasks ahead of Games (T-5 months).',type:'Action Item',status:'Active',r:0,owner:'Adja T. Badji',due:'2026-05-29',p2g:'Report received; gaps assessed; monitoring cadence established.'},
+  {id:'AI_150',title:'OFX Complete Torch Tower Venue List',desc:'Complete list promised end of May. Required by Sonatel to confirm free 5G private APN provision.',type:'Action Item',status:'Active',r:0,owner:'M. Konate',due:'2026-05-31',p2g:'Complete list received; APN free-provision confirmed by Sonatel.'},
+  {id:'Dec_080',title:'Ad Hoc Comms Undermining Incident Visibility',desc:'Teams using WhatsApp/email for incident coordination — incidents invisible to operational readiness team.',type:'Decision',status:'Active',r:9,owner:'O.B.K. Diop',due:'2026-07-01',p2g:'ServiceNow as sole incident logging tool. Guidance published before tabletop exercises.'},
+  {id:'Dec_149',title:'Accreditation Launch Without Background-Check Module',desc:'ACR launched 22 May without background-check module. Module target ~22 June 2026.',type:'Decision',status:'Ongoing Mitigation',r:0,owner:'S. Samake',due:'2026-06-30',p2g:'Background-check module available and integrated by target date.'},
+  {id:'Dec_163',title:'SWM Legacy Equipment Cannot Be Validated',desc:'Legacy pool equipment cannot be validated by Omega — missing supplier info (quantities, certification).',type:'Decision',status:'Active',r:16,owner:'Ana CRESPO',due:'2026-06-12',p2g:'Omega needs supplier documentation or must supply own equipment.'},
+  {id:'Issue_065',title:'HR Resources — ARTP Staffing',desc:'Resources from ARTP not yet confirmed affected to Dakar 2026.',type:'Issue',status:'Active',r:0,owner:'Fatou FALL',due:'2026-04-30',p2g:'Address in ARTP coordination meeting.'},
+  {id:'Issue_083',title:'Tech Rehearsal Readiness — DRR Slippage Reduces Remediation Window',desc:'Sep 7-10 rehearsal requires all teams physically present, trained in ServiceNow and proficient.',type:'Issue',status:'Accepted',r:8,owner:'Adja T. Badji',due:'2026-09-07',p2g:'Maintain strict DRR/tabletop timelines. Publish TRO assessment criteria before July tabletop.'},
+  {id:'Issue_091',title:'GMS Penetration Test — 5 Critical Findings Open',desc:'Pentest returned 6 critical findings; 1 resolved. 5 remain under Omega analysis.',type:'Issue',status:'Ongoing Mitigation',r:0,owner:'S. Samake',due:'2026-05-15',p2g:'Omega to deliver finding-by-finding analysis. Remediation plan with dates agreed.'},
+  {id:'Issue_094',title:'Telco PnPs Not in Dossier de Garde',desc:'Telco PnPs not yet validated; awaiting validation before transfer to dossier.',type:'Issue',status:'Ongoing Mitigation',r:0,owner:'M. Konate',due:'2026-04-30',p2g:'Confirm validation with authoring team; transfer to dossier; evidence filed.'},
+  {id:'Issue_095',title:'No Formal ARTP Frequency Exemption for Stakeholders',desc:'No official written exemption from Dakar for ARTP for stakeholder frequency fees.',type:'Issue',status:'Active',r:0,owner:'Fatou FALL',due:'2026-05-15',p2g:'Obtain written exemption; circulate to stakeholders; file in governance.'},
+  {id:'Issue_112',title:'Esspresso Commercial Data Offer Outstanding',desc:'Esspresso commercial offer still outstanding. SIM testing programme blocked.',type:'Issue',status:'Ongoing Mitigation',r:0,owner:'M. Konate',due:'2026-05-09',p2g:'Follow up with Esspresso; obtain offer; proceed to SIM tests.'},
+  {id:'Issue_113',title:'SIM Prioritisation Validation Pending',desc:'Validation with Sonatel and other operators pending. Alignment meeting to be organised.',type:'Issue',status:'Ongoing Mitigation',r:0,owner:'M. Konate',due:'2026-05-06',p2g:'Convene operator alignment meeting; confirmations logged.'},
+  {id:'Issue_124',title:'Checkpoint Late Contractualisation',desc:'Low engagement for Checkpoint resource on delivery. Contract not yet finalised.',type:'Issue',status:'Active',r:0,owner:'M.B. DIA',due:'2026-05-31',p2g:'Finalise contract.'},
+  {id:'Issue_131',title:'Contingency Plan Completion Gap Across Functional Teams',desc:'Only NRG completed contingency plan. All other functional teams outstanding despite relaunches.',type:'Issue',status:'Active',r:0,owner:'Adja T. Badji',due:'2026-05-26',p2g:'Chase all outstanding teams. Track completion weekly. Escalate to EGM if gap persists.'},
+  {id:'Issue_132',title:'Support Model Validation Pending',desc:'Support Model critical/non-critical operating hours and support phone number not yet locked.',type:'Issue',status:'Active',r:0,owner:'Soufiane MAAKOUK',due:'2026-06-02',p2g:'Consolidate feedback. Lock operating hours with Adja and Oumar. Formally validate.'},
+  {id:'Issue_138',title:'Checkpoint Contract Not Signed — Firewall Mobilisation Gap',desc:'No contract = no deliverable escalation basis. Core to infrastructure at venues and internet breakouts.',type:'Issue',status:'Active',r:0,owner:'O.B.K. Diop',due:'2026-05-31',p2g:'Checkpoint contract signed; resources mobilised; LLD alignment re-baselined.'},
+  {id:'Issue_140',title:'EVI Infrastructure Audit Pending — Telecom/Energy/AV',desc:'Site audit pending despite multiple reminders. Blocks PMR HLD ordering activities.',type:'Issue',status:'Active',r:0,owner:'O.B.K. Diop',due:'2026-06-15',p2g:'Audit company contracted by EVI; audit scope defined; reports issued.'},
+  {id:'Issue_162',title:'No Email/Laptop for SENUM DVTMs',desc:'All DVTMs lack email addresses and equipment. Onboarding blocked.',type:'Issue',status:'Active',r:0,owner:'Misaki TSURUTA',due:'2026-06-05',p2g:'Emails created by D26 end of week. Laptops to be purchased by IT Corporate.'},
+].filter(r=>r.type!=='Risk');
+
+let curRaid='all';
+function renderRisk(data,tbodyId,isCyber){
+  const tb=document.getElementById(tbodyId);
+  tb.innerHTML=data.map(r=>{
+    const idChip=isCyber?`<span class="raid-id cyber">${r.id}</span><br><span style="font-family:var(--mono);font-size:8px;color:var(--muted)">${r.ref||''}</span>`:`<span class="raid-id">${r.id}</span>`;
+    const ratingVal=typeof r.r==='number'&&r.r>0?`<span class="rating-bg ${rc(r.r)}">${r.r}</span>`:`<span class="r0">—</span>`;
+    const likStr=typeof r.lik==='number'?r.lik:r.lik||'—';
+    return`<tr>
+      <td>${idChip}</td>
+      <td><div class="raid-ttl">${r.title}</div><div class="raid-dsc">${r.desc}</div></td>
+      <td><span class="sp ${sc2(r.status)}">${r.status}</span></td>
+      <td>${ratingVal}</td>
+      <td class="lik-imp">${r.imp}×${likStr}</td>
+      <td style="font-family:var(--mono);font-size:9px;color:var(--dim);white-space:nowrap">${r.owner}</td>
+      <td><span class="due-d ${dc2(r.due)}">${fd(r.due)}</span></td>
+      <td style="font-size:11px;color:var(--muted);max-width:220px;line-height:1.4">${r.p2g}</td>
+    </tr>`;
+  }).join('');
+}
+function renderRaid(){
+  let rows=RAID.filter(r=>{if(curRaid==='all')return true;return r.type===curRaid;});
+  // No risks in this table — they are in the dedicated risk tables above
+  rows=rows.filter(r=>r.type!=='Risk');
+  const tb=document.getElementById('raid-tbody');
+  tb.innerHTML=rows.map(r=>{
+    const typeCls=r.type==='Issue'?'tp-iss':r.type==='Action Item'?'tp-act':'tp-dec';
+    const ratingVal=r.r>0?`<span class="rating-bg ${rc(r.r)}">${r.r}</span>`:`<span class="r0">—</span>`;
+    return`<tr>
+      <td><span class="raid-id">${r.id}</span></td>
+      <td><div class="raid-ttl">${r.title}</div><div class="raid-dsc">${r.desc}</div></td>
+      <td><span class="tp ${typeCls}">${r.type}</span></td>
+      <td><span class="sp ${sc2(r.status)}">${r.status}</span></td>
+      <td>${ratingVal}</td>
+      <td style="font-family:var(--mono);font-size:9px;color:var(--dim);white-space:nowrap">${r.owner}</td>
+      <td><span class="due-d ${dc2(r.due)}">${fd(r.due)}</span></td>
+      <td style="font-size:11px;color:var(--muted);max-width:220px;line-height:1.4">${r.p2g}</td>
+    </tr>`;
+  }).join('');
+}
+function filterRaid(el,v){
+  curRaid=v;
+  document.querySelectorAll('#raidTabs .rtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderRaid();
+}
+
+renderGantt();
+renderRisk(NC_RISKS.slice(0,5),'risk-noncyber-tbody',false);
+renderRisk(REMAINING_RISKS,'risk-remaining-tbody',false);
+renderRisk(CY_RISKS,'risk-cyber-tbody',true);
+renderRaid();
+
+// ══════════════════════════════════════════════════════════════════
+// LIVE DATA LOADER — fetches from /data/*.json (written by GitHub Actions)
+// Falls back to hardcoded data if fetch fails (e.g. local file open)
+// ══════════════════════════════════════════════════════════════════
+async function loadLiveData() {
+  try {
+    const [raidRes, tmsRes, drrRes, metaRes] = await Promise.all([
+      fetch('./data/raid.json'),
+      fetch('./data/tms.json'),
+      fetch('./data/drr.json'),
+      fetch('./data/meta.json'),
+    ]);
+
+    if (!raidRes.ok || !tmsRes.ok) throw new Error('Data not available');
+
+    const raidData = await raidRes.json();
+    const tmsData  = await tmsRes.json();
+    const drrData  = await drrRes.json();
+    const meta     = await metaRes.json();
+
+    // Update last-sync display
+    if (meta.lastUpdated && meta.lastUpdated !== 'pending') {
+      const d = new Date(meta.lastUpdated);
+      const fmt = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})
+                + ' ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'}) + ' UTC';
+      const el = document.getElementById('last-sync');
+      if (el) el.textContent = fmt;
+    }
+
+    // ── Re-populate RAID arrays from live data ──────────────────────────────
+    if (raidData.length > 0) {
+      const openItems = raidData.filter(r => r.status !== 'Closed');
+
+      // Separate risks from non-risks
+      const allRisks    = openItems.filter(r => r.type === 'Risk' || (r.id && r.id.startsWith('Risk_')));
+      const nonRisks    = openItems.filter(r => r.type !== 'Risk' && !(r.id && r.id.startsWith('Risk_')));
+
+      // Cyber risks = those with D26.CYB ref or owner Yakhya Diop
+      const cyberRisks  = allRisks.filter(r =>
+        (r.ref && r.ref.includes('CYB')) ||
+        (r.owner && r.owner.toLowerCase().includes('yakhya')) ||
+        (r.id && (r.id.includes('154')||r.id.includes('155')||r.id.includes('156')||r.id.includes('157')||r.id.includes('158')||r.id.includes('159')||r.id.includes('151')||r.id.includes('152')||r.id.includes('153')))
+      );
+      const nonCyberRisks = allRisks.filter(r => !cyberRisks.includes(r));
+
+      // Sort by rating desc
+      const sortByRating = arr => arr.slice().sort((a,b) => {
+        const ra = parseFloat(a.rating) || 0;
+        const rb = parseFloat(b.rating) || 0;
+        return rb - ra;
+      });
+
+      const top5NC  = sortByRating(nonCyberRisks).slice(0,5);
+      const top5CY  = sortByRating(cyberRisks).slice(0,5);
+      const excl    = new Set([...top5NC, ...top5CY].map(r=>r.id));
+      const remaining = sortByRating(allRisks).filter(r => !excl.has(r.id));
+
+      // Map to display format
+      function mapRisk(r) {
+        const imp = parseFloat(r.impact)     || null;
+        const lik = parseFloat(r.likelihood) || null;
+        const rat = parseFloat(r.rating)     || (imp && lik ? imp * lik : 0);
+        return {
+          id: r.id, ref: r.ref||'', title: r.title||'(no title)',
+          desc: r.desc||'', type: r.type, status: r.status,
+          r: rat, imp: imp, lik: lik,
+          owner: r.owner||'—', due: r.due||'—', p2g: r.p2g||'—'
+        };
+      }
+
+      // Re-render risk tables
+      renderRisk(top5NC.map(mapRisk),    'risk-noncyber-tbody', false);
+      renderRisk(top5CY.map(mapRisk),    'risk-cyber-tbody',    true);
+      renderRisk(remaining.map(mapRisk), 'risk-remaining-tbody',false);
+
+      // Re-populate and re-render full RAID log (non-risk items)
+      window.RAID = nonRisks.map(r => ({
+        id: r.id, title: r.title||'(no title)', desc: r.desc||'',
+        type: r.type, status: r.status,
+        r: parseFloat(r.rating)||0,
+        owner: r.owner||'—', due: r.due||'—', p2g: r.p2g||'—'
+      }));
+      renderRaid();
+    }
+
+    // ── Re-populate DRR summary ─────────────────────────────────────────────
+    if (drrData.length > 0) {
+      const red    = drrData.filter(r => r.rag === 'Red').length;
+      const amber  = drrData.filter(r => r.rag === 'Amber').length;
+      const done   = drrData.filter(r => r.rag === 'Green' || (r.reschEnd && r.reschEnd.includes('EXECUTED'))).length;
+      const excl2  = drrData.filter(r => r.rag === 'Excluded').length;
+      // Update KPI cells if they exist
+      ['drr-red','drr-amber','drr-done','drr-excl'].forEach((id,i) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = [red,amber,done,excl2][i];
+      });
+    }
+
+    console.log('✓ Live data loaded from Smartsheet via GitHub Actions', meta);
+
+  } catch (err) {
+    console.warn('Live data unavailable, using snapshot data:', err.message);
+    // Hardcoded data already rendered — no action needed
+  }
+}
+
+// Load live data on startup
+loadLiveData();
+
+</script>
+</body>
+</html>

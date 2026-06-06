@@ -1,0 +1,12 @@
+{
+  "name": "d26-smartsheet-sync",
+  "version": "1.0.0",
+  "description": "Dakar 2026 TEC — Smartsheet data sync for RAID & Deliverables dashboard",
+  "main": "fetch.js",
+  "scripts": {
+    "sync": "node fetch.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
