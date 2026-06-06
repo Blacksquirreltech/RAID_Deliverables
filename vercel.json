@@ -1,9 +1,18 @@
 {
   "version": 2,
-  "functions": {
-    "api/data.js": {
-      "memory": 256,
-      "maxDuration": 15
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
     }
-  }
+  ]
 }
