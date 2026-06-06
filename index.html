@@ -709,81 +709,104 @@ renderRisk(REMAINING_RISKS,'risk-remaining-tbody',false);
 renderRisk(CY_RISKS,'risk-cyber-tbody',true);
 renderRaid();
 
-// ══════════════════════════════════════════════════════════════════
-// LIVE DATA — calls /api/data (Vercel serverless → Smartsheet)
-// Auto-refreshes every 30 minutes. Falls back to snapshot on error.
-// ══════════════════════════════════════════════════════════════════
 
-function colIndex(sheet) {
+
+
+// ══════════════════════════════════════════════════════════════
+// LIVE SMARTSHEET DATA LOADER
+// Uses corsproxy.io to bypass CORS — no server config needed
+// ══════════════════════════════════════════════════════════════
+
+const SS_TOKEN = '4WmjsP8V2PA7e3GP624bc4xxsSfEPzpMRUSEL';
+
+// corsproxy.io wraps any API call and adds CORS headers
+function ssUrl(sheetId) {
+  const target = encodeURIComponent(
+    `https://api.smartsheet.com/2.0/sheets/${sheetId}?pageSize=500`
+  );
+  return `https://corsproxy.io/?url=${target}`;
+}
+
+const SHEET_IDS = {
+  raid: 7427364280553348,
+  tms:  7433689576198020,
+  drr:  3468458757934980,
+};
+
+async function ssGet(name) {
+  const res = await fetch(ssUrl(SHEET_IDS[name]), {
+    headers: {
+      'Authorization': `Bearer ${SS_TOKEN}`,
+      'x-requested-with': 'XMLHttpRequest'
+    }
+  });
+  if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
+  return res.json();
+}
+
+function colIdx(sheet) {
   const m = {};
   for (const c of sheet.columns) m[c.title] = c.index;
   return m;
 }
-function cell(row, idx) {
+
+function cv(row, idx) {
   if (idx == null) return null;
   const c = row.cells.find(c => c.columnIndex === idx);
   return c?.displayValue ?? c?.value ?? null;
 }
 
-async function fetchSheet(name) {
-  const res = await fetch(`/api/data?sheet=${name}`);
-  if (!res.ok) throw new Error(`/api/data?sheet=${name} → ${res.status}`);
-  return res.json();
-}
-
 function parseRaid(sheet) {
-  const cm = colIndex(sheet);
-  return sheet.rows.map(row => ({
-    id:      cell(row, cm['Unique Identifier']),
-    title:   cell(row, cm['Title'])         || '(no title)',
-    type:    cell(row, cm['Type']),
-    status:  cell(row, cm['Status']),
-    desc:    cell(row, cm['Description'])   || '',
-    due:     cell(row, cm['Due Date'])      || '—',
-    owner:   cell(row, cm['Owner'])         || '—',
-    impact:  parseFloat(cell(row, cm['Impact']))       || 0,
-    lik:     parseFloat(cell(row, cm['Likelihood']))   || 0,
-    rating:  parseFloat(cell(row, cm['Rating']))       || 0,
-    p2g:     cell(row, cm['Path to Green']) || '—',
-    ref:     cell(row, cm['Plan Reference'])|| '',
+  const cm = colIdx(sheet);
+  return sheet.rows.map(r => ({
+    id:     cv(r, cm['Unique Identifier']),
+    title:  cv(r, cm['Title'])         || '(no title)',
+    type:   cv(r, cm['Type']),
+    status: cv(r, cm['Status']),
+    desc:   cv(r, cm['Description'])   || '',
+    due:    cv(r, cm['Due Date'])       || '—',
+    owner:  cv(r, cm['Owner'])          || '—',
+    impact: parseFloat(cv(r, cm['Impact']))      || 0,
+    lik:    parseFloat(cv(r, cm['Likelihood']))  || 0,
+    rating: parseFloat(cv(r, cm['Rating']))      || 0,
+    p2g:    cv(r, cm['Path to Green']) || '—',
+    ref:    cv(r, cm['Plan Reference'])|| '',
   })).filter(r => r.id && r.status !== 'Closed');
 }
 
 function parseTMS(sheet) {
-  const cm = colIndex(sheet);
-  return sheet.rows.map(row => ({
-    id:     cell(row, cm['TMS Identifier']),
-    name:   cell(row, cm['Task Name']),
-    status: cell(row, cm['Status']),
-    finish: cell(row, cm['Expected Finish Date']),
-    type:   cell(row, cm['Milestone / Task Type']) || '',
-    wg:     cell(row, cm['Owner']) || '',
+  const cm = colIdx(sheet);
+  return sheet.rows.map(r => ({
+    id:     cv(r, cm['TMS Identifier']),
+    name:   cv(r, cm['Task Name']),
+    status: cv(r, cm['Status']),
+    finish: cv(r, cm['Expected Finish Date']),
+    type:   cv(r, cm['Milestone / Task Type']) || '',
+    wg:     cv(r, cm['Owner']) || '',
   })).filter(r => r.id && r.name);
 }
 
 function parseDRR(sheet) {
-  const cm = colIndex(sheet);
-  return sheet.rows.map(row => ({
-    service:  cell(row, cm['Service']),
-    rag:      cell(row, cm['Overall RAG']),
-    provider: cell(row, cm['Service Provider']),
+  const cm = colIdx(sheet);
+  return sheet.rows.map(r => ({
+    service:  cv(r, cm['Service']),
+    rag:      cv(r, cm['Overall RAG']),
+    provider: cv(r, cm['Service Provider']),
   })).filter(r => r.service);
 }
 
-function sortDesc(arr) {
-  return arr.slice().sort((a,b) => {
-    const ra = (r) => r.rating || (r.impact * r.lik) || 0;
-    return ra(b) - ra(a);
-  });
+function sortByRating(arr) {
+  return arr.slice().sort((a,b) =>
+    (b.rating || b.impact*b.lik || 0) - (a.rating || a.impact*a.lik || 0)
+  );
 }
 
 function toRiskObj(r) {
   return {
-    id: r.id, ref: r.ref, title: r.title, desc: r.desc,
+    id: r.id, ref: r.ref||'', title: r.title, desc: r.desc,
     type: r.type, status: r.status,
     r: r.rating || (r.impact * r.lik) || 0,
-    imp: r.impact || null,
-    lik: r.lik    || null,
+    imp: r.impact||null, lik: r.lik||null,
     owner: r.owner, due: r.due, p2g: r.p2g
   };
 }
@@ -794,62 +817,47 @@ async function loadLiveData() {
 
   try {
     const [raidSheet, tmsSheet, drrSheet] = await Promise.all([
-      fetchSheet('raid'),
-      fetchSheet('tms'),
-      fetchSheet('drr'),
+      ssGet('raid'), ssGet('tms'), ssGet('drr')
     ]);
 
     const raidAll = parseRaid(raidSheet);
     const tmsAll  = parseTMS(tmsSheet);
     const drrAll  = parseDRR(drrSheet);
 
-    // ── Split risks ────────────────────────────────────────────────────────
-    const allRisks = raidAll.filter(r =>
-      r.type === 'Risk' || (r.id && r.id.toLowerCase().startsWith('risk_'))
-    );
-    const nonRisks = raidAll.filter(r =>
-      r.type !== 'Risk' && !(r.id && r.id.toLowerCase().startsWith('risk_'))
-    );
-    const cyberRisks = allRisks.filter(r =>
-      (r.ref && r.ref.includes('CYB')) ||
-      (r.owner && r.owner.toLowerCase().includes('yakhya'))
-    );
+    // Split risks
+    const allRisks      = raidAll.filter(r => r.type === 'Risk' || (r.id||'').toLowerCase().startsWith('risk_'));
+    const nonRisks      = raidAll.filter(r => !allRisks.includes(r));
+    const cyberRisks    = allRisks.filter(r => (r.ref||'').includes('CYB') || (r.owner||'').toLowerCase().includes('yakhya'));
     const nonCyberRisks = allRisks.filter(r => !cyberRisks.includes(r));
 
-    const top5NC      = sortDesc(nonCyberRisks).slice(0, 5);
-    const top5CY      = sortDesc(cyberRisks).slice(0, 5);
-    const excludedIds = new Set([...top5NC, ...top5CY].map(r => r.id));
-    const remaining   = sortDesc(allRisks).filter(r => !excludedIds.has(r.id));
+    const top5NC      = sortByRating(nonCyberRisks).slice(0,5);
+    const top5CY      = sortByRating(cyberRisks).slice(0,5);
+    const excludedIds = new Set([...top5NC,...top5CY].map(r=>r.id));
+    const remaining   = sortByRating(allRisks).filter(r=>!excludedIds.has(r.id));
 
-    // ── Re-render all three risk tables ────────────────────────────────────
+    // Render risk tables
     renderRisk(top5NC.map(toRiskObj),    'risk-noncyber-tbody',  false);
     renderRisk(top5CY.map(toRiskObj),    'risk-cyber-tbody',     true);
     renderRisk(remaining.map(toRiskObj), 'risk-remaining-tbody', false);
 
-    // ── Re-render RAID log (issues/actions/decisions only) ─────────────────
-    window.RAID = nonRisks.map(r => ({
-      id: r.id, title: r.title, desc: r.desc,
-      type: r.type, status: r.status,
-      r: r.rating || 0,
-      owner: r.owner, due: r.due, p2g: r.p2g
+    // Render RAID log
+    window.RAID = nonRisks.map(r=>({
+      id:r.id, title:r.title, desc:r.desc,
+      type:r.type, status:r.status,
+      r:r.rating||0, owner:r.owner, due:r.due, p2g:r.p2g
     }));
     renderRaid();
 
-    // ── Update header KPIs ─────────────────────────────────────────────────
-    const updates = {
-      'rk-active':  raidAll.filter(r => r.status === 'Active').length,
-      'rk-ongoing': raidAll.filter(r => r.status === 'Ongoing Mitigation').length,
-      'rk-total':   raidAll.length,
-      'drr-red':    drrAll.filter(r => r.rag === 'Red').length,
-      'drr-amber':  drrAll.filter(r => r.rag === 'Amber').length,
-      'tms-open':   tmsAll.filter(r => r.status === 'Not Started').length,
-    };
-    Object.entries(updates).forEach(([id, val]) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    });
+    // Update KPIs
+    [['rk-active', raidAll.filter(r=>r.status==='Active').length],
+     ['rk-ongoing',raidAll.filter(r=>r.status==='Ongoing Mitigation').length],
+     ['rk-total',  raidAll.length],
+     ['drr-red',   drrAll.filter(r=>r.rag==='Red').length],
+     ['drr-amber', drrAll.filter(r=>r.rag==='Amber').length],
+     ['tms-open',  tmsAll.filter(r=>r.status==='Not Started').length],
+    ].forEach(([id,val])=>{ const el=document.getElementById(id); if(el) el.textContent=val; });
 
-    // ── Timestamp ──────────────────────────────────────────────────────────
+    // Timestamp
     const now = new Date();
     if (syncEl) syncEl.textContent =
       now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})
@@ -857,17 +865,14 @@ async function loadLiveData() {
       now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})
       + ' WAT';
 
-    console.log('✓ Smartsheet live data loaded', {
-      raid: raidAll.length, tms: tmsAll.length, drr: drrAll.length
-    });
+    console.log('✓ Smartsheet live data loaded', {raid:raidAll.length, tms:tmsAll.length, drr:drrAll.length});
 
-  } catch (err) {
-    console.warn('Live sync failed — showing snapshot data.', err.message);
+  } catch(err) {
+    console.error('Live sync failed:', err);
     if (syncEl) syncEl.textContent = 'Snapshot (sync failed)';
   }
 }
 
-// Load immediately on page open, then every 30 min
 loadLiveData();
 setInterval(loadLiveData, 30 * 60 * 1000);
 
