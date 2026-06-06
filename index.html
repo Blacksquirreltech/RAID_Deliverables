@@ -876,6 +876,71 @@ async function loadLiveData() {
 loadLiveData();
 setInterval(loadLiveData, 30 * 60 * 1000);
 
+
+// ── LIVE DATA — fetches from /api/data (Vercel serverless → Smartsheet) ──
+
+function colIdx(sheet){ const m={}; for(const c of sheet.columns) m[c.title]=c.index; return m; }
+function cv(row,idx){ if(idx==null)return null; const c=row.cells.find(c=>c.columnIndex===idx); return c?.displayValue??c?.value??null; }
+
+async function ssGet(name){
+  const res = await fetch('/api/data?sheet='+name);
+  if(!res.ok){ const t=await res.text(); throw new Error(name+': '+res.status+' '+t.slice(0,120)); }
+  return res.json();
+}
+
+function parseRaid(s){ const cm=colIdx(s); return s.rows.map(r=>({ id:cv(r,cm['Unique Identifier']), title:cv(r,cm['Title'])||'(no title)', type:cv(r,cm['Type']), status:cv(r,cm['Status']), desc:cv(r,cm['Description'])||'', due:cv(r,cm['Due Date'])||'—', owner:cv(r,cm['Owner'])||'—', impact:parseFloat(cv(r,cm['Impact']))||0, lik:parseFloat(cv(r,cm['Likelihood']))||0, rating:parseFloat(cv(r,cm['Rating']))||0, p2g:cv(r,cm['Path to Green'])||'—', ref:cv(r,cm['Plan Reference'])||'', })).filter(r=>r.id&&r.status!=='Closed'); }
+
+function parseTMS(s){ const cm=colIdx(s); return s.rows.map(r=>({ id:cv(r,cm['TMS Identifier']), name:cv(r,cm['Task Name']), status:cv(r,cm['Status']), finish:cv(r,cm['Expected Finish Date']), wg:cv(r,cm['Owner'])||'', })).filter(r=>r.id&&r.name); }
+
+function parseDRR(s){ const cm=colIdx(s); return s.rows.map(r=>({ service:cv(r,cm['Service']), rag:cv(r,cm['Overall RAG']), })).filter(r=>r.service); }
+
+function sortR(arr){ return arr.slice().sort((a,b)=>((b.rating||b.impact*b.lik||0)-(a.rating||a.impact*a.lik||0))); }
+function toRO(r){ return {id:r.id,ref:r.ref||'',title:r.title,desc:r.desc,type:r.type,status:r.status,r:r.rating||(r.impact*r.lik)||0,imp:r.impact||null,lik:r.lik||null,owner:r.owner,due:r.due,p2g:r.p2g}; }
+
+async function loadLiveData(){
+  const el = document.getElementById('last-sync');
+  if(el) el.textContent='Syncing…';
+  try{
+    const [rS,tS,dS] = await Promise.all([ssGet('raid'),ssGet('tms'),ssGet('drr')]);
+    const rAll=parseRaid(rS), tAll=parseTMS(tS), dAll=parseDRR(dS);
+
+    const risks    = rAll.filter(r=>r.type==='Risk'||(r.id||'').toLowerCase().startsWith('risk_'));
+    const nonRisks = rAll.filter(r=>!risks.includes(r));
+    const cyber    = risks.filter(r=>(r.ref||'').includes('CYB')||(r.owner||'').toLowerCase().includes('yakhya'));
+    const nonCyber = risks.filter(r=>!cyber.includes(r));
+
+    const t5NC=sortR(nonCyber).slice(0,5), t5CY=sortR(cyber).slice(0,5);
+    const excl=new Set([...t5NC,...t5CY].map(r=>r.id));
+    const rem=sortR(risks).filter(r=>!excl.has(r.id));
+
+    renderRisk(t5NC.map(toRO),'risk-noncyber-tbody',false);
+    renderRisk(t5CY.map(toRO),'risk-cyber-tbody',true);
+    renderRisk(rem.map(toRO),'risk-remaining-tbody',false);
+
+    window.RAID=nonRisks.map(r=>({id:r.id,title:r.title,desc:r.desc,type:r.type,status:r.status,r:r.rating||0,owner:r.owner,due:r.due,p2g:r.p2g}));
+    renderRaid();
+
+    [['rk-active',rAll.filter(r=>r.status==='Active').length],
+     ['rk-ongoing',rAll.filter(r=>r.status==='Ongoing Mitigation').length],
+     ['rk-total',rAll.length],
+     ['drr-red',dAll.filter(r=>r.rag==='Red').length],
+     ['drr-amber',dAll.filter(r=>r.rag==='Amber').length],
+     ['tms-open',tAll.filter(r=>r.status==='Not Started').length],
+    ].forEach(([id,v])=>{ const e=document.getElementById(id); if(e) e.textContent=v; });
+
+    const now=new Date();
+    if(el) el.textContent=now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})+' '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' WAT';
+    console.log('✓ Live data',{raid:rAll.length,tms:tAll.length,drr:dAll.length});
+
+  }catch(err){
+    console.error('Sync failed:',err.message);
+    if(el) el.textContent='Snapshot (sync failed)';
+  }
+}
+
+loadLiveData();
+setInterval(loadLiveData, 30*60*1000);
+
 </script>
 </body>
 </html>
