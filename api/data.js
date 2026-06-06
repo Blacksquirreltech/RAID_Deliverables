@@ -1,44 +1,41 @@
-// Vercel serverless function — proxies Smartsheet API calls server-side
-// Deployed at: /api/data?sheet=raid|tms|drr
-// No CORS issues — runs on Vercel's server, not the browser
+// Vercel serverless proxy — calls Smartsheet server-side, returns JSON to browser
+// Token is hardcoded here so no environment variable setup is needed
 
-const SHEET_IDS = {
+const TOKEN = '4WmjsP8V2PA7e3GP624bc4xxsSfEPzpMRUSEL';
+
+const SHEETS = {
   raid: '7427364280553348',
   tms:  '7433689576198020',
   drr:  '3468458757934980',
 };
 
 export default async function handler(req, res) {
-  // Allow browser to call this endpoint
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
-  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Cache-Control', 'no-store');
 
-  const { sheet } = req.query;
-  const sheetId   = SHEET_IDS[sheet];
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (!sheetId) {
-    return res.status(400).json({ error: `Unknown sheet: ${sheet}. Use raid, tms, or drr.` });
-  }
+  const sheet = req.query?.sheet || req.url?.split('sheet=')[1];
+  const id    = SHEETS[sheet];
 
-  const token = process.env.SMARTSHEET_TOKEN;
-  if (!token) {
-    return res.status(500).json({ error: 'SMARTSHEET_TOKEN not configured in Vercel environment.' });
+  if (!id) {
+    return res.status(400).json({ error: `Unknown sheet "${sheet}". Use: raid, tms, drr` });
   }
 
   try {
-    const url  = `https://api.smartsheet.com/2.0/sheets/${sheetId}?pageSize=500`;
-    const resp = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` }
+    const r = await fetch(`https://api.smartsheet.com/2.0/sheets/${id}?pageSize=500`, {
+      headers: { Authorization: `Bearer ${TOKEN}` }
     });
 
-    if (!resp.ok) {
-      const text = await resp.text();
-      return res.status(resp.status).json({ error: `Smartsheet error: ${resp.status}`, detail: text });
+    const text = await r.text();
+
+    if (!r.ok) {
+      return res.status(r.status).json({ error: `Smartsheet ${r.status}`, detail: text });
     }
 
-    const data = await resp.json();
-    return res.status(200).json(data);
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(text);
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
