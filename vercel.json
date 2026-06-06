@@ -1,18 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "index.html", "use": "@vercel/static" }
-  ],
+  "functions": {
+    "api/data.js": {
+      "memory": 256,
+      "maxDuration": 15
+    }
+  },
   "routes": [
-    { "src": "/(.*)", "dest": "/$1" }
-  ],
-  "headers": [
-    {
-      "source": "/data/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
-      ]
+    { "src": "/api/data", "dest": "/api/data.js" },
+    { "src": "/(.*)",     "dest": "/$1",
+      "headers": { "Cache-Control": "no-cache" }
     }
   ]
 }

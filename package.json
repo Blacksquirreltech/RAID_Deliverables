@@ -1,12 +1,9 @@
 {
   "name": "raid-deliverables",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Dakar 2026 TEC – RAID & Deliverables Dashboard",
   "private": true,
-  "scripts": {
-    "fetch": "node scripts/fetch.js"
-  },
-  "dependencies": {
-    "node-fetch": "^3.3.2"
+  "engines": {
+    "node": "20.x"
   }
 }
