@@ -697,7 +697,10 @@ function filterRaid(el, v){
 }
 
 // ── LIVE DATA — /api/data (Vercel serverless → Smartsheet) ───────────────
-// ── Data fetching — reads pre-parsed slim rows from api/data.js ──────────
+// ── Data fetching — handles raw Smartsheet API response format ───────────
+// The API returns: { columns:[{index,title}], rows:[{cells:[{columnId,displayValue,value}]}] }
+// We convert column IDs to titles then build plain objects per row
+
 async function ssGet(name){
   const res = await fetch('/api/data?sheet='+name);
   if(!res.ok){
@@ -705,14 +708,32 @@ async function ssGet(name){
     throw new Error('/api/data?sheet='+name+' → HTTP '+res.status+': '+t.slice(0,200));
   }
   const data = await res.json();
-  console.log('[D26] ssGet', name, '→ count:', data.count, 'rows:', (data.rows||[]).length);
-  return data.rows || [];
+
+  // Build columnId → title map (Smartsheet uses columnId in cells, not index)
+  const idToTitle = {};
+  const idToIndex = {};
+  for(const col of (data.columns||[])){
+    idToTitle[col.id]    = col.title;
+    idToIndex[col.id]    = col.index;
+  }
+
+  // Convert each row's cells into a plain { "Column Title": value } object
+  const rows = (data.rows||[]).map(row => {
+    const obj = {};
+    for(const cell of (row.cells||[])){
+      const title = idToTitle[cell.columnId];
+      if(title){
+        obj[title] = cell.displayValue ?? cell.value ?? null;
+      }
+    }
+    return obj;
+  });
+
+  console.log('[D26] ssGet', name, '→ rows:', rows.length, 'sample keys:', Object.keys(rows[0]||{}).slice(0,5));
+  return rows;
 }
 
 function parseRaid(rows){
-  // rows are plain objects keyed by exact Smartsheet column title
-  // Titles verified from live sheet: Unique Identifier, Title, Type,
-  // Description, Due Date, Path to Green, Status, Owner, Impact, Likelihood, Rating
   return rows.map(r=>({
     id:     r['Unique Identifier'] || null,
     ref:    r['Plan Reference']    || '',
@@ -730,7 +751,6 @@ function parseRaid(rows){
 }
 
 function parseDRR(rows){
-  // DRR column titles: Service, Service Provider, Workgroup, Overall RAG etc
   return rows.map(r=>({
     service: r['Service']     || null,
     rag:     r['Overall RAG'] || null,
@@ -738,7 +758,6 @@ function parseDRR(rows){
 }
 
 function parseTMS(rows){
-  // TMS column titles: TMS Identifier, Task Name, Status etc
   return rows.map(r=>({
     id:     r['TMS Identifier'] || null,
     status: r['Status']         || null,
