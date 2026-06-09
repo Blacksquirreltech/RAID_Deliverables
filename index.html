@@ -697,60 +697,47 @@ function filterRaid(el, v){
 }
 
 // ── LIVE DATA — /api/data (Vercel serverless → Smartsheet) ───────────────
-function colIdx(sheet){ const m={}; for(const c of sheet.columns) m[c.title]=c.index; return m; }
-function cv(row,idx){
-  if(idx==null) return null;
-  const c=row.cells.find(c=>c.columnIndex===idx);
-  return c?.displayValue ?? c?.value ?? null;
-}
-
+// ── Data fetching — reads pre-parsed slim rows from api/data.js ──────────
 async function ssGet(name){
   const res = await fetch('/api/data?sheet='+name);
   if(!res.ok){
     const t = await res.text();
-    throw new Error(`/api/data?sheet=${name} → HTTP ${res.status}: ${t.slice(0,200)}`);
+    throw new Error('/api/data?sheet='+name+' → HTTP '+res.status+': '+t.slice(0,200));
   }
-  return res.json();
+  const data = await res.json();
+  console.log('[D26] ssGet', name, '→ count:', data.count, 'rows:', (data.rows||[]).length);
+  return data.rows || [];
 }
 
-function parseRaid(sheet){
-  // Use column INDEX directly — verified from live API 09 Jun 2026
-  // 1=Unique Identifier, 2=Plan Reference, 3=Title, 4=Type
-  // 5=Description, 7=Due Date, 8=Path to Green, 9=Status
-  // 12=Owner(CONTACT_LIST), 14=Impact, 15=Likelihood, 16=Rating
-  function cvByIdx(row, idx){
-    const c = row.cells.find(c => c.columnIndex === idx);
-    return c ? (c.displayValue ?? c.value ?? null) : null;
-  }
-  return sheet.rows.map(r=>({
-    id:     cvByIdx(r,1),
-    ref:    cvByIdx(r,2) || '',
-    title:  cvByIdx(r,3) || '(no title)',
-    type:   cvByIdx(r,4),
-    desc:   cvByIdx(r,5) || '',
-    due:    cvByIdx(r,7) || '—',
-    p2g:    cvByIdx(r,8) || '—',
-    status: cvByIdx(r,9),
-    owner:  cvByIdx(r,12) || '—',
-    impact: parseFloat(cvByIdx(r,14)) || 0,
-    lik:    parseFloat(cvByIdx(r,15)) || 0,
-    rating: parseFloat(cvByIdx(r,16)) || 0,
+function parseRaid(rows){
+  // rows are already parsed objects from api/data.js
+  return rows.map(r=>({
+    id:     r.id     || null,
+    ref:    r.ref    || '',
+    title:  r.title  || '(no title)',
+    type:   r.type   || '',
+    desc:   r.desc   || '',
+    due:    r.due    || '—',
+    p2g:    r.p2g    || '—',
+    status: r.status || '',
+    owner:  r.owner  || '—',
+    impact: parseFloat(r.impact)     || 0,
+    lik:    parseFloat(r.likelihood) || 0,
+    rating: parseFloat(r.rating)     || 0,
   })).filter(r => r.id && r.status && r.status !== 'Closed');
 }
 
-function parseDRR(sheet){
-  const cm = colIdx(sheet);
-  return sheet.rows.map(r=>({
-    service: cv(r,cm['Service']),
-    rag:     cv(r,cm['Overall RAG']),
+function parseDRR(rows){
+  return rows.map(r=>({
+    service: r.service || null,
+    rag:     r.rag     || null,
   })).filter(r=>r.service);
 }
 
-function parseTMS(sheet){
-  const cm = colIdx(sheet);
-  return sheet.rows.map(r=>({
-    id:     cv(r,cm['TMS Identifier']),
-    status: cv(r,cm['Status']),
+function parseTMS(rows){
+  return rows.map(r=>({
+    id:     r.id     || null,
+    status: r.status || null,
   })).filter(r=>r.id);
 }
 
@@ -793,7 +780,7 @@ async function loadLiveData(){
     ]);
 
     debugStatus('Parsing RAID data...');
-    const raidAll = parseRaid(raidSheet);
+    const raidAll = parseRaid(raidSheet); // already plain objects
     debugStatus('RAID rows: ' + raidAll.length + ' open items');
     console.log('[D26] Sample row:', raidAll[0]);
     const tmsAll  = parseTMS(tmsSheet);
