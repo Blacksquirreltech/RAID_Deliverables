@@ -711,21 +711,28 @@ async function ssGet(name){
 }
 
 function parseRaid(sheet){
-  const cm = colIdx(sheet);
+  // Use column INDEX directly — verified from live API 09 Jun 2026
+  // 1=Unique Identifier, 2=Plan Reference, 3=Title, 4=Type
+  // 5=Description, 7=Due Date, 8=Path to Green, 9=Status
+  // 12=Owner(CONTACT_LIST), 14=Impact, 15=Likelihood, 16=Rating
+  function cvByIdx(row, idx){
+    const c = row.cells.find(c => c.columnIndex === idx);
+    return c ? (c.displayValue ?? c.value ?? null) : null;
+  }
   return sheet.rows.map(r=>({
-    id:     cv(r,cm['Unique Identifier']),
-    title:  cv(r,cm['Title'])          || '(no title)',
-    type:   cv(r,cm['Type']),
-    status: cv(r,cm['Status']),
-    desc:   cv(r,cm['Description'])    || '',
-    due:    cv(r,cm['Due Date'])        || '—',
-    owner:  cv(r,cm['Owner'])           || '—',
-    impact: parseFloat(cv(r,cm['Impact']))      || 0,
-    lik:    parseFloat(cv(r,cm['Likelihood']))  || 0,
-    rating: parseFloat(cv(r,cm['Rating']))      || 0,
-    p2g:    cv(r,cm['Path to Green'])  || '—',
-    ref:    cv(r,cm['Plan Reference']) || '',
-  })).filter(r => r.id && r.status !== 'Closed');
+    id:     cvByIdx(r,1),
+    ref:    cvByIdx(r,2) || '',
+    title:  cvByIdx(r,3) || '(no title)',
+    type:   cvByIdx(r,4),
+    desc:   cvByIdx(r,5) || '',
+    due:    cvByIdx(r,7) || '—',
+    p2g:    cvByIdx(r,8) || '—',
+    status: cvByIdx(r,9),
+    owner:  cvByIdx(r,12) || '—',
+    impact: parseFloat(cvByIdx(r,14)) || 0,
+    lik:    parseFloat(cvByIdx(r,15)) || 0,
+    rating: parseFloat(cvByIdx(r,16)) || 0,
+  })).filter(r => r.id && r.status && r.status !== 'Closed');
 }
 
 function parseDRR(sheet){
