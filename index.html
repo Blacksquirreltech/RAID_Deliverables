@@ -710,34 +710,38 @@ async function ssGet(name){
 }
 
 function parseRaid(rows){
-  // rows are already parsed objects from api/data.js
+  // rows are plain objects keyed by exact Smartsheet column title
+  // Titles verified from live sheet: Unique Identifier, Title, Type,
+  // Description, Due Date, Path to Green, Status, Owner, Impact, Likelihood, Rating
   return rows.map(r=>({
-    id:     r.id     || null,
-    ref:    r.ref    || '',
-    title:  r.title  || '(no title)',
-    type:   r.type   || '',
-    desc:   r.desc   || '',
-    due:    r.due    || '—',
-    p2g:    r.p2g    || '—',
-    status: r.status || '',
-    owner:  r.owner  || '—',
-    impact: parseFloat(r.impact)     || 0,
-    lik:    parseFloat(r.likelihood) || 0,
-    rating: parseFloat(r.rating)     || 0,
+    id:     r['Unique Identifier'] || null,
+    ref:    r['Plan Reference']    || '',
+    title:  r['Title']             || '(no title)',
+    type:   r['Type']              || '',
+    desc:   r['Description']       || '',
+    due:    r['Due Date']          || '—',
+    p2g:    r['Path to Green']     || '—',
+    status: r['Status']            || '',
+    owner:  r['Owner']             || '—',
+    impact: parseFloat(r['Impact'])      || 0,
+    lik:    parseFloat(r['Likelihood'])  || 0,
+    rating: parseFloat(r['Rating'])      || 0,
   })).filter(r => r.id && r.status && r.status !== 'Closed');
 }
 
 function parseDRR(rows){
+  // DRR column titles: Service, Service Provider, Workgroup, Overall RAG etc
   return rows.map(r=>({
-    service: r.service || null,
-    rag:     r.rag     || null,
+    service: r['Service']     || null,
+    rag:     r['Overall RAG'] || null,
   })).filter(r=>r.service);
 }
 
 function parseTMS(rows){
+  // TMS column titles: TMS Identifier, Task Name, Status etc
   return rows.map(r=>({
-    id:     r.id     || null,
-    status: r.status || null,
+    id:     r['TMS Identifier'] || null,
+    status: r['Status']         || null,
   })).filter(r=>r.id);
 }
 
@@ -780,6 +784,8 @@ async function loadLiveData(){
     ]);
 
     debugStatus('Parsing RAID data...');
+    console.log('[D26] RAW raidSheet[0]:', JSON.stringify(raidSheet[0]));
+    console.log('[D26] RAW raidSheet[1]:', JSON.stringify(raidSheet[1]));
     const raidAll = parseRaid(raidSheet); // already plain objects
     debugStatus('RAID rows: ' + raidAll.length + ' open items');
     console.log('[D26] Sample row:', raidAll[0]);
