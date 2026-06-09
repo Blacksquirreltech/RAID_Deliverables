@@ -319,6 +319,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
     <div class="rk blu"><div class="rk-lbl">Last Sync</div><div class="rk-val" style="font-size:14px;margin-top:8px" id="rk-sync">–</div><div class="rk-sub">WAT live</div></div>
   </div>
 
+  <!-- DEBUG STATUS BAR -->
+  <div id="debug-status" style="font-family:var(--mono);font-size:10px;padding:8px 16px;background:rgba(41,181,102,.06);border:1px solid rgba(41,181,102,.15);border-radius:6px;color:var(--green);letter-spacing:1px">Initialising…</div>
+
   <!-- Risk Group 1: Top 5 Non-Cyber -->
   <div>
     <div class="risk-hdr nc">
@@ -771,17 +774,28 @@ function toRO(r){
 function setEl(id,v){ const e=document.getElementById(id); if(e) e.textContent=v; }
 
 async function loadLiveData(){
+  // ── DEBUG: show status in RAID tab ──────────────────────────────────────
+  function debugStatus(msg, isError){
+    const el = document.getElementById('debug-status');
+    if(el){ el.textContent = msg; el.style.color = isError ? '#e04545' : '#29b566'; }
+    if(isError) console.error('[D26]', msg);
+    else console.log('[D26]', msg);
+  }
   const syncEl  = document.getElementById('last-sync');
   const syncEl2 = document.getElementById('rk-sync');
   if(syncEl)  syncEl.textContent  = 'Syncing…';
   if(syncEl2) syncEl2.textContent = 'Syncing…';
 
   try {
+    debugStatus('Fetching from Smartsheet API...');
     const [raidSheet, tmsSheet, drrSheet] = await Promise.all([
       ssGet('raid'), ssGet('tms'), ssGet('drr')
     ]);
 
+    debugStatus('Parsing RAID data...');
     const raidAll = parseRaid(raidSheet);
+    debugStatus('RAID rows: ' + raidAll.length + ' open items');
+    console.log('[D26] Sample row:', raidAll[0]);
     const tmsAll  = parseTMS(tmsSheet);
     const drrAll  = parseDRR(drrSheet);
 
@@ -802,10 +816,12 @@ async function loadLiveData(){
     const remaining   = sortByR(allRisks).filter(r=>!excludedIds.has(r.id));
 
     // ── Render ────────────────────────────────────────────────────────────
+    debugStatus('Rendering risk tables (' + top5NC.length + ' NC, ' + top5CY.length + ' CY, ' + remaining.length + ' remaining)...');
     renderRisk(top5NC.map(toRO),    'tb-nc', false);
     renderRisk(top5CY.map(toRO),    'tb-cy', true);
     renderRisk(remaining.map(toRO), 'tb-rm', false);
 
+    debugStatus('Rendering issues/actions/decisions (' + nonRisks.length + ' items)...');
     window.RAID_DATA = nonRisks.map(r=>({
       id:r.id, title:r.title, desc:r.desc,
       type:r.type, status:r.status,
@@ -831,8 +847,10 @@ async function loadLiveData(){
     console.log('✓ Smartsheet live data', {raid:raidAll.length, tms:tmsAll.length, drr:drrAll.length});
 
   } catch(err){
-    console.error('Sync failed:', err.message);
-    if(syncEl)  syncEl.textContent  = 'Sync failed';
+    const msg = 'Sync failed: ' + err.message;
+    console.error('[D26]', msg, err);
+    debugStatus(msg, true);
+    if(syncEl)  syncEl.textContent  = 'Sync failed: ' + err.message;
     if(syncEl2) syncEl2.textContent = 'Sync failed';
   }
 }
