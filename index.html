@@ -708,28 +708,9 @@ async function ssGet(name){
     throw new Error('/api/data?sheet='+name+' → HTTP '+res.status+': '+t.slice(0,200));
   }
   const data = await res.json();
-
-  // Build columnId → title map (Smartsheet uses columnId in cells, not index)
-  const idToTitle = {};
-  const idToIndex = {};
-  for(const col of (data.columns||[])){
-    idToTitle[col.id]    = col.title;
-    idToIndex[col.id]    = col.index;
-  }
-
-  // Convert each row's cells into a plain { "Column Title": value } object
-  const rows = (data.rows||[]).map(row => {
-    const obj = {};
-    for(const cell of (row.cells||[])){
-      const title = idToTitle[cell.columnId];
-      if(title){
-        obj[title] = cell.displayValue ?? cell.value ?? null;
-      }
-    }
-    return obj;
-  });
-
-  console.log('[D26] ssGet', name, '→ rows:', rows.length, 'sample keys:', Object.keys(rows[0]||{}).slice(0,5));
+  // api/data.js returns { sheet, count, rows:[{"Column Title": value}] }
+  const rows = data.rows || [];
+  console.log('[D26] ssGet', name, '→ count:', data.count, 'rows:', rows.length, 'sample keys:', Object.keys(rows[0]||{}).slice(0,6));
   return rows;
 }
 
