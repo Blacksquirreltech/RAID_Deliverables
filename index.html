@@ -738,16 +738,16 @@ function parseRaid(rows){
     id:     r['Unique Identifier'] || null,
     ref:    r['Plan Reference']    || '',
     title:  r['Title']             || '(no title)',
-    type:   r['Type']              || '',
+    type:   r['Type']              || 'Risk',
     desc:   r['Description']       || '',
     due:    r['Due Date']          || '—',
     p2g:    r['Path to Green']     || '—',
-    status: r['Status']            || '',
+    status: r['Status']            || 'Active',
     owner:  r['Owner']             || '—',
     impact: parseFloat(r['Impact'])      || 0,
     lik:    parseFloat(r['Likelihood'])  || 0,
     rating: parseFloat(r['Rating'])      || 0,
-  })).filter(r => r.id && r.status && r.status !== 'Closed');
+  })).filter(r => r.id && r.status !== 'Closed');
 }
 
 function parseDRR(rows){
