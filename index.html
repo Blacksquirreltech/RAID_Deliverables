@@ -303,7 +303,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13
     <div class="sc"><div class="sc-lbl">Not Started</div><div class="sc-val" style="color:var(--grey)">9</div><div class="sc-sub">At risk of slip</div></div>
     <div class="sc"><div class="sc-lbl">Rescheduled</div><div class="sc-val" style="color:var(--gold)">2</div><div class="sc-sub">Window opened</div></div>
   </div>
-  <div class="g-datelbl">06 June → 06 July 2026 · Dakar WAT</div>
+  <div class="g-datelbl" id="gantt-datelbl">Loading... · Dakar WAT</div>
   <div class="g-scroll">
     <div class="gx-scroll"><div id="gantt-mount"></div></div>
   </div>
@@ -436,8 +436,25 @@ function tick(){
 tick();
 setInterval(tick, 1000);
 
+// Update header date dynamically
+(function(){
+  const now = new Date();
+  const d = now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}).toUpperCase();
+  const el = document.getElementById('hdr-today');
+  if(el) el.textContent = d;
+  // Also update window label
+  const wl = document.getElementById('hdr-window');
+  if(wl){
+    const end = new Date(WIN_START);
+    end.setUTCDate(end.getUTCDate()+30);
+    wl.textContent = now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',timeZone:'UTC'})
+      + ' → '
+      + end.toLocaleDateString('en-GB',{day:'2-digit',month:'short',timeZone:'UTC'});
+  }
+})();
+
 // ── GANTT DATA ────────────────────────────────────────────────────────────
-const WIN_START  = new Date('2026-06-06T00:00:00Z');
+const WIN_START  = new Date(new Date().toISOString().slice(0,10)+'T00:00:00Z'); // always today WAT
 const TOTAL_DAYS = 31;
 const DAY_W      = 28;
 const DOW        = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
@@ -506,8 +523,7 @@ function wgKey(wg){
 
 // ── Live Gantt rebuild from TMS data ────────────────────────────────────────
 function rebuildGanttFromTMS(tmsRows) {
-  const TODAY_STR = '2026-06-16'; // updated each deploy — WAT
-  const WIN_START_D = new Date('2026-06-16T00:00:00Z');
+  const WIN_START_D = WIN_START; // use the global dynamic WIN_START
   const WIN_END_D   = new Date('2026-07-16T00:00:00Z');
 
   function dayOffset(dateStr) {
@@ -646,6 +662,14 @@ function rebuildGanttFromTMS(tmsRows) {
   }
 
   // Replace global GANTT array and re-render
+  // Update date ribbon
+  const dlbl = document.getElementById('gantt-datelbl');
+  if(dlbl){
+    const winEnd2 = new Date(WIN_START_D);
+    winEnd2.setUTCDate(winEnd2.getUTCDate()+30);
+    const fmt = d => d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric',timeZone:'UTC'});
+    dlbl.textContent = fmt(WIN_START_D) + ' → ' + fmt(winEnd2) + ' · Dakar WAT';
+  }
   GANTT.length = 0;
   for(const item of newGantt) GANTT.push(item);
 
@@ -699,7 +723,9 @@ function renderGantt(){
       h += `<div class="${sc}" style="width:${DAY_W}px"></div>`;
     });
 
-    h += `<div class="today-line" style="left:0px"></div>`;
+    // Today line — calculated from WIN_START (which is always today, so offset=0 on first load)
+    const todayOffsetPx = 0; // WIN_START = today, so always 0
+    h += `<div class="today-line" style="left:${todayOffsetPx}px"></div>`;
 
     const bs = Math.max(0, item.s);
     const be = Math.min(TOTAL_DAYS-1, item.e);
