@@ -552,39 +552,42 @@ function rebuildGanttFromTMS(tmsRows) {
     return 's-ns';
   }
 
-  // Filter to items in the 30-day window or overdue
-  const L1   = [];
-  const overdue = [];
+  // Filter: cut-off is 13 Nov 2026 (Closing Ceremony)
+  const CUTOFF = new Date('2026-11-13T00:00:00Z');
+  const L1       = [];
   const inWindow = [];
 
   for(const r of tmsRows) {
     if(!r.finish && !r.start) continue;
-    const finOff = dayOffset(r.finish);
+    const finDate  = r.finish ? new Date(r.finish) : null;
+    const finOff   = dayOffset(r.finish);
     const startOff = dayOffset(r.start);
-    const isL1 = r.type && r.type.includes('Level 1');
-    const isDone = r.status && (r.status.toLowerCase().includes('complete'));
-    if(isDone) continue; // skip completed
+    const isL1   = r.type && r.type.includes('Level 1');
+    const isDone = r.status && r.status.toLowerCase().includes('complete');
+    if(isDone) continue;
+    // Hard cutoff at 13 Nov 2026
+    if(finDate && finDate > CUTOFF) continue;
 
     if(isL1) {
-      L1.push({...r, finOff, startOff});
-    } else if(finOff !== null && finOff < 0) {
-      // overdue — finish before today
-      if(!isDone) overdue.push({...r, finOff, startOff});
-    } else if(
-      (finOff !== null && finOff <= 30) ||
-      (startOff !== null && startOff >= 0 && startOff <= 30)
-    ) {
-      inWindow.push({...r, finOff, startOff});
+      // L1 milestones: show if they fall within today → today+30
+      if(finOff !== null && finOff >= 0 && finOff <= 30) {
+        L1.push({...r, finOff, startOff});
+      }
+    } else {
+      // Regular items: finish date within today → today+30
+      if(finOff !== null && finOff >= 0 && finOff <= 30) {
+        inWindow.push({...r, finOff, startOff});
+      }
     }
   }
 
-  // Sort each group by finish date
+  // Sort by finish date
   const sortByFin = arr => arr.slice().sort((a,b)=>(a.finOff||0)-(b.finOff||0));
 
   // Build new GANTT array
   const newGantt = [];
 
-  // L1 Milestones
+  // Group 1: L1 Milestones (IOC reporting — always first)
   if(L1.length) {
     newGantt.push({section:'◆  IOC LEVEL 1 MILESTONES — Executive Reporting to IOC / YOGOC', ioc:true});
     for(const r of sortByFin(L1)) {
@@ -597,8 +600,8 @@ function rebuildGanttFromTMS(tmsRows) {
         status: r.status || 'Not Started',
         sc:     wgToStatCls(r.status),
         owner:  r.owner || '—',
-        s:      Math.max(-30, r.startOff !== null ? r.startOff : 0),
-        e:      Math.min(30,  r.finOff   !== null ? r.finOff   : 30),
+        s:      Math.max(0, r.startOff !== null ? r.startOff : 0),
+        e:      Math.min(30, r.finOff  !== null ? r.finOff   : 30),
         ms:     isMilestone,
         ioc:    true,
         ov:     false,
@@ -608,38 +611,28 @@ function rebuildGanttFromTMS(tmsRows) {
     }
   }
 
-  // Overdue
-  if(overdue.length) {
-    newGantt.push({section:'⚠  OVERDUE — Past Deadline · Escalation Required'});
-    for(const r of sortByFin(overdue)) {
-      newGantt.push({
-        id:     r.id,
-        name:   r.name,
-        wg:     r.wg || 'Programme',
-        bc:     'bar-ov',
-        status: 'OVERDUE',
-        sc:     's-ov',
-        owner:  r.owner || '—',
-        s:      Math.max(-30, r.startOff !== null ? r.startOff : -30),
-        e:      -1,
-        ms:     true,
-        ioc:    false,
-        ov:     true,
-        sl:     r.start  ? r.start.slice(0,10)  : '—',
-        el:     (r.finish ? r.finish.slice(0,10) : '—') + ' ★',
-      });
-    }
-  }
-
-  // In-window by workstream
+  // Group 2: All other deliverables in window, grouped by workstream
   const byWg = {};
   for(const r of inWindow) {
     const wg = r.wg || 'Programme Management';
     if(!byWg[wg]) byWg[wg] = [];
     byWg[wg].push(r);
   }
-  for(const [wg, items] of Object.entries(byWg)) {
-    newGantt.push({section: wg.toUpperCase() + ' — Deliverables in Window'});
+
+  // Workstream display order
+  const WG_ORDER = [
+    'Cyber Security','Venue Technology','Telecoms','Energy Services',
+    'Applications','Programme Management','Operations Readiness'
+  ];
+  const wgKeys = [
+    ...WG_ORDER.filter(k => byWg[k]),
+    ...Object.keys(byWg).filter(k => !WG_ORDER.includes(k))
+  ];
+
+  for(const wg of wgKeys) {
+    const items = byWg[wg];
+    if(!items || !items.length) continue;
+    newGantt.push({section: wg.toUpperCase() + ' — ' + items.length + ' DELIVERABLE' + (items.length>1?'S':'') + ' IN WINDOW'});
     for(const r of sortByFin(items)) {
       const isMilestone = r.type && r.type.includes('Milestone');
       newGantt.push({
@@ -651,7 +644,7 @@ function rebuildGanttFromTMS(tmsRows) {
         sc:     wgToStatCls(r.status),
         owner:  r.owner || '—',
         s:      Math.max(0, r.startOff !== null ? r.startOff : 0),
-        e:      Math.min(30, r.finOff   !== null ? r.finOff   : 30),
+        e:      Math.min(30, r.finOff  !== null ? r.finOff   : 30),
         ms:     isMilestone,
         ioc:    false,
         ov:     false,
