@@ -503,6 +503,156 @@ function wgKey(wg){
   return 'pmo';
 }
 
+
+// ── Live Gantt rebuild from TMS data ────────────────────────────────────────
+function rebuildGanttFromTMS(tmsRows) {
+  const TODAY_STR = '2026-06-16'; // updated each deploy — WAT
+  const WIN_START_D = new Date('2026-06-16T00:00:00Z');
+  const WIN_END_D   = new Date('2026-07-16T00:00:00Z');
+
+  function dayOffset(dateStr) {
+    if(!dateStr) return null;
+    const d = new Date(dateStr);
+    return Math.round((d - WIN_START_D) / 864e5);
+  }
+
+  function wgToBarClass(wg, id) {
+    if(!wg && !id) return 'bar-pmo';
+    const s = (wg+id).toLowerCase();
+    if(s.includes('cyber'))  return 'bar-cyber';
+    if(s.includes('venue')||s.includes('vts')||s.includes('vros')) return 'bar-vros';
+    if(s.includes('teleco')||s.includes('tlc')||s.includes('pmr')) return 'bar-telco';
+    if(s.includes('energy')||s.includes('nrg')) return 'bar-nrg';
+    if(s.includes('app')||s.includes('tkt')||s.includes('acr')) return 'bar-apps';
+    return 'bar-pmo';
+  }
+
+  function wgToStatCls(status) {
+    if(!status) return 's-ns';
+    const s = status.toLowerCase();
+    if(s.includes('complete')) return 's-tr';
+    if(s.includes('progress')||s.includes('track')) return 's-pr';
+    if(s.includes('not start')) return 's-ns';
+    return 's-ns';
+  }
+
+  // Filter to items in the 30-day window or overdue
+  const L1   = [];
+  const overdue = [];
+  const inWindow = [];
+
+  for(const r of tmsRows) {
+    if(!r.finish && !r.start) continue;
+    const finOff = dayOffset(r.finish);
+    const startOff = dayOffset(r.start);
+    const isL1 = r.type && r.type.includes('Level 1');
+    const isDone = r.status && (r.status.toLowerCase().includes('complete'));
+    if(isDone) continue; // skip completed
+
+    if(isL1) {
+      L1.push({...r, finOff, startOff});
+    } else if(finOff !== null && finOff < 0) {
+      // overdue — finish before today
+      if(!isDone) overdue.push({...r, finOff, startOff});
+    } else if(
+      (finOff !== null && finOff <= 30) ||
+      (startOff !== null && startOff >= 0 && startOff <= 30)
+    ) {
+      inWindow.push({...r, finOff, startOff});
+    }
+  }
+
+  // Sort each group by finish date
+  const sortByFin = arr => arr.slice().sort((a,b)=>(a.finOff||0)-(b.finOff||0));
+
+  // Build new GANTT array
+  const newGantt = [];
+
+  // L1 Milestones
+  if(L1.length) {
+    newGantt.push({section:'◆  IOC LEVEL 1 MILESTONES — Executive Reporting to IOC / YOGOC', ioc:true});
+    for(const r of sortByFin(L1)) {
+      const isMilestone = r.type && r.type.includes('Milestone');
+      newGantt.push({
+        id:     r.id,
+        name:   r.name,
+        wg:     'IOC L1',
+        bc:     'bar-ioc',
+        status: r.status || 'Not Started',
+        sc:     wgToStatCls(r.status),
+        owner:  r.owner || '—',
+        s:      Math.max(-30, r.startOff !== null ? r.startOff : 0),
+        e:      Math.min(30,  r.finOff   !== null ? r.finOff   : 30),
+        ms:     isMilestone,
+        ioc:    true,
+        ov:     false,
+        sl:     r.start  ? r.start.slice(0,10)  : '—',
+        el:     r.finish ? r.finish.slice(0,10) : '—',
+      });
+    }
+  }
+
+  // Overdue
+  if(overdue.length) {
+    newGantt.push({section:'⚠  OVERDUE — Past Deadline · Escalation Required'});
+    for(const r of sortByFin(overdue)) {
+      newGantt.push({
+        id:     r.id,
+        name:   r.name,
+        wg:     r.wg || 'Programme',
+        bc:     'bar-ov',
+        status: 'OVERDUE',
+        sc:     's-ov',
+        owner:  r.owner || '—',
+        s:      Math.max(-30, r.startOff !== null ? r.startOff : -30),
+        e:      -1,
+        ms:     true,
+        ioc:    false,
+        ov:     true,
+        sl:     r.start  ? r.start.slice(0,10)  : '—',
+        el:     (r.finish ? r.finish.slice(0,10) : '—') + ' ★',
+      });
+    }
+  }
+
+  // In-window by workstream
+  const byWg = {};
+  for(const r of inWindow) {
+    const wg = r.wg || 'Programme Management';
+    if(!byWg[wg]) byWg[wg] = [];
+    byWg[wg].push(r);
+  }
+  for(const [wg, items] of Object.entries(byWg)) {
+    newGantt.push({section: wg.toUpperCase() + ' — Deliverables in Window'});
+    for(const r of sortByFin(items)) {
+      const isMilestone = r.type && r.type.includes('Milestone');
+      newGantt.push({
+        id:     r.id,
+        name:   r.name,
+        wg:     r.wg || wg,
+        bc:     wgToBarClass(r.wg, r.id),
+        status: r.status || 'Not Started',
+        sc:     wgToStatCls(r.status),
+        owner:  r.owner || '—',
+        s:      Math.max(0, r.startOff !== null ? r.startOff : 0),
+        e:      Math.min(30, r.finOff   !== null ? r.finOff   : 30),
+        ms:     isMilestone,
+        ioc:    false,
+        ov:     false,
+        sl:     r.start  ? r.start.slice(0,10)  : '—',
+        el:     r.finish ? r.finish.slice(0,10) : '—',
+      });
+    }
+  }
+
+  // Replace global GANTT array and re-render
+  GANTT.length = 0;
+  for(const item of newGantt) GANTT.push(item);
+
+  renderGantt();
+  console.log('[D26] Gantt rebuilt from TMS:', newGantt.length, 'items (L1:', L1.length, 'overdue:', overdue.length, 'window:', inWindow.length + ')');
+}
+
 function renderGantt(){
   const BW = TOTAL_DAYS * DAY_W;
   let h = '<table class="gtable"><thead class="ghead"><tr>';
@@ -740,9 +890,17 @@ function parseDRR(rows){
 
 function parseTMS(rows){
   return rows.map(r=>({
-    id:     r['TMS Identifier'] || null,
-    status: r['Status']         || null,
-  })).filter(r=>r.id);
+    id:       r['TMS Identifier']       || null,
+    name:     r['Task Name']            || '(no name)',
+    status:   r['Status']               || null,
+    owner:    r['Assigned Owner']       || '—',
+    start:    r['Start Date']           || null,
+    finish:   r['Expected Finish Date'] || null,
+    type:     r['Milestone / Task Type']|| '',
+    wg:       r['Owner']                || '',
+    iocCode:  r['IOC Milestone Code']   || '',
+    wgId:     r['WG Unique Identifier'] || '',
+  })).filter(r=>r.id && r.name && r.name !== r.id);
 }
 
 function sortByR(arr){
@@ -821,6 +979,9 @@ async function loadLiveData(){
       r:r.rating||0, owner:r.owner, due:r.due, p2g:r.p2g
     }));
     renderRaid();
+
+    // ── Rebuild Gantt from live TMS data ──────────────────────────────────
+    rebuildGanttFromTMS(tmsAll);
 
     // ── KPIs ──────────────────────────────────────────────────────────────
     setEl('rk-active',  raidAll.filter(r=>r.status==='Active').length);
