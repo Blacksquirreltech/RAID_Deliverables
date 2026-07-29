@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dakar 2026 — TEC RAID Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0c12;--paper:#f4f3ee;--surf:#ffffff;--surf2:#f0efe9;
+  --border:#e2e0d8;--border2:#ccc9bc;
+  --gold:#c8922a;--gold-lt:#f5e4c0;
+  --red:#c0392b;--red-lt:#fbeae8;
+  --amber:#d4720c;--amber-lt:#fdf0e0;
+  --green:#1a7a4a;--green-lt:#e4f5ec;
+  --blue:#1a5fa8;--blue-lt:#e4eef8;
+  --purple:#6b3fa0;--purple-lt:#f0eaf8;
+  --grey:#6b6b6b;--grey-lt:#f0efea;
+  --text:#1a1c24;--dim:#5a5c6a;--muted:#9a9c9a;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',sans-serif;
+  --disp:'Bebas Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* HEADER */
+.hdr{background:var(--ink);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.hdr-l{display:flex;align-items:center;gap:20px}
+.badge{font-family:var(--disp);font-size:24px;letter-spacing:4px;color:var(--gold)}
+.hdiv{width:1px;height:32px;background:rgba(255,255,255,.1)}
+.htitle{font-family:var(--disp);font-size:18px;letter-spacing:2px;color:#fff}
+.hsub{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-top:2px}
+.hdr-r{display:flex;align-items:center;gap:20px}
+.hst{text-align:right}
+.hslbl{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase}
+.hsval{font-family:var(--mono);font-size:11px;color:var(--gold);margin-top:1px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* TABS */
+.tabs{background:var(--surf);border-bottom:2px solid var(--border);padding:0 28px;display:flex;flex-shrink:0}
+.tab{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:13px 22px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;user-select:none;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.tab:hover:not(.active){color:var(--dim)}
+.tcnt{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:20px;font-weight:500;transition:all .15s}
+.tab.active.t-risk .tcnt{background:var(--red);color:#fff}
+.tab:not(.active).t-risk .tcnt{background:var(--red-lt);color:var(--red)}
+.tab.active.t-issue .tcnt{background:var(--amber);color:#fff}
+.tab:not(.active).t-issue .tcnt{background:var(--amber-lt);color:var(--amber)}
+.tab.active.t-action .tcnt{background:var(--blue);color:#fff}
+.tab:not(.active).t-action .tcnt{background:var(--blue-lt);color:var(--blue)}
+.tab.active.t-decision .tcnt{background:var(--purple);color:#fff}
+.tab:not(.active).t-decision .tcnt{background:var(--purple-lt);color:var(--purple)}
+
+/* PAGES */
+.page{display:none;flex:1;overflow:hidden;flex-direction:column}
+.page.active{display:flex}
+
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);flex-shrink:0}
+.kpi{background:var(--surf);padding:14px 20px}
+.kpi-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.kpi-val{font-family:var(--disp);font-size:32px;letter-spacing:1px;line-height:1}
+.kpi-sub{font-size:10px;color:var(--dim);margin-top:3px}
+
+/* FILTER BAR */
+.fbar{padding:11px 28px;background:var(--surf);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.fbar-lbl{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-right:4px}
+.fbtn{font-family:var(--mono);font-size:9px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;transition:all .12s;letter-spacing:.5px}
+.fbtn:hover{background:var(--surf2);border-color:var(--border2)}
+.fbtn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.fbar-sep{width:1px;height:16px;background:var(--border);margin:0 4px}
+.fbar-ct{font-family:var(--mono);font-size:9px;color:var(--muted);margin-left:auto}
+
+/* SCROLL CONTENT */
+.content{flex:1;overflow-y:auto;overflow-x:hidden}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.twrap{padding:20px 28px 32px}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse}
+thead th{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;padding:9px 14px;text-align:left;border-bottom:2px solid var(--border);font-weight:400;background:var(--surf);position:sticky;top:0;z-index:5;white-space:nowrap}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:12px;color:var(--dim)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(0,0,0,.018)}
+
+/* RATING BLOCK */
+.rb-wrap{display:flex;align-items:center;gap:10px}
+.rb{width:46px;height:46px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:22px;line-height:1;flex-shrink:0}
+.rb-crit{background:#c0392b;color:#fff}
+.rb-high{background:#e8620c;color:#fff}
+.rb-med{background:#d4720c;color:#fff}
+.rb-low{background:#5a8a5a;color:#fff}
+.rb-zero{background:var(--grey-lt);color:var(--muted)}
+.rb-meta{display:flex;flex-direction:column;gap:2px}
+.rb-formula{font-family:var(--mono);font-size:9px;color:var(--dim);font-weight:500}
+.rb-label{font-family:var(--mono);font-size:8px;color:var(--muted)}
+
+/* RANK NUMBER */
+.rank{font-family:var(--disp);font-size:20px;color:var(--border2);width:28px;text-align:center}
+.rank.top{color:var(--gold)}
+
+/* ITEM CONTENT */
+.iid{font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(200,146,42,.08);padding:2px 6px;border-radius:3px;border:1px solid rgba(200,146,42,.18);display:inline-block;margin-bottom:5px}
+.iref{font-family:var(--mono);font-size:8px;color:var(--muted);margin-left:4px}
+.ititle{font-weight:600;color:var(--text);font-size:13px;line-height:1.3;margin-bottom:4px}
+.idesc{font-size:11.5px;color:var(--dim);line-height:1.45;max-width:500px}
+.isvc{font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:5px}
+
+/* STATUS PILLS */
+.sp{font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-block}
+.sp-active{background:var(--red-lt);color:var(--red);border:1px solid rgba(192,57,43,.15)}
+.sp-ongoing{background:var(--amber-lt);color:var(--amber);border:1px solid rgba(212,114,12,.15)}
+.sp-accepted{background:var(--blue-lt);color:var(--blue);border:1px solid rgba(26,95,168,.15)}
+.sp-closed{background:var(--green-lt);color:var(--green);border:1px solid rgba(26,122,74,.15)}
+
+/* OWNER / DATE */
+.own{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.due{font-family:var(--mono);font-size:10px;white-space:nowrap}
+.due-ov{color:var(--red);font-weight:600}
+.due-sn{color:var(--amber);font-weight:600}
+.due-ok{color:var(--blue)}
+.due-nd{color:var(--muted)}
+
+/* PATH TO GREEN */
+.p2g{font-size:11px;color:var(--dim);line-height:1.45;max-width:260px}
+
+/* EMPTY / LOADING */
+.loading-wrap{padding:60px;text-align:center}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.empty-txt{padding:48px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+/* FOOTER */
+.ftr{border-top:1px solid var(--border);background:var(--surf);padding:8px 28px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;letter-spacing:1px;color:var(--muted);flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <span class="badge">DAKAR 2026</span>
+    <div class="hdiv"></div>
+    <div>
+      <div class="htitle">TEC RAID COMMAND</div>
+      <div class="hsub">Technology Programme · Deloitte PMO · IOC / YOGOC</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div class="hst"><div class="hslbl">Last Sync</div><div class="hsval" id="last-sync">Connecting…</div></div>
+    <div class="hst"><div class="hslbl">Source</div><div class="hsval">SMARTSHEET LIVE</div></div>
+    <div class="live-dot"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab t-risk active" onclick="showTab('risk')">
+    ⬛ Risks — Highest to Lowest
+    <span class="tcnt" id="cnt-risk">–</span>
+  </div>
+  <div class="tab t-issue" onclick="showTab('issue')">
+    🟡 Issues
+    <span class="tcnt" id="cnt-issue">–</span>
+  </div>
+  <div class="tab t-action" onclick="showTab('action')">
+    🔵 Action Items
+    <span class="tcnt" id="cnt-action">–</span>
+  </div>
+  <div class="tab t-decision" onclick="showTab('decision')">
+    🟣 Decisions
+    <span class="tcnt" id="cnt-decision">–</span>
+  </div>
+</div>
+
+<!-- RISKS -->
+<div id="pg-risk" class="page active">
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-lbl">Critical (≥16)</div>
+      <div class="kpi-val" style="color:var(--red)" id="k-crit">–</div>
+      <div class="kpi-sub">Immediate escalation</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">High (12–15)</div>
+      <div class="kpi-val" style="color:#e8620c" id="k-high">–</div>
+      <div class="kpi-sub">Senior attention</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Medium (6–11)</div>
+      <div class="kpi-val" style="color:var(--amber)" id="k-med">–</div>
+      <div class="kpi-sub">Monitor closely</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Low / Unrated</div>
+      <div class="kpi-val" style="color:var(--grey)" id="k-low">–</div>
+      <div class="kpi-sub">Watch list</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Total Open Risks</div>
+      <div class="kpi-val" style="color:var(--green)" id="k-total">–</div>
+      <div class="kpi-sub">Excl. closed</div>
+    </div>
+  </div>
+  <div class="fbar">
+    <span class="fbar-lbl">Show</span>
+    <button class="fbtn active" onclick="setFilter(this,'risk','all')">All Open</button>
+    <button class="fbtn" onclick="setFilter(this,'risk','Active')">Active</button>
+    <button class="fbtn" onclick="setFilter(this,'risk','Ongoing Mitigation')">Ongoing Mitigation</button>
+    <button class="fbtn" onclick="setFilter(this,'risk','Accepted')">Accepted</button>
+    <div class="fbar-sep"></div>
+    <span class="fbar-ct" id="risk-ct"></span>
+  </div>
+  <div class="content">
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:36px">#</th>
+          <th style="width:160px">Rating</th>
+          <th>Risk Title &amp; Description</th>
+          <th style="width:110px">Status</th>
+          <th style="width:110px">Owner</th>
+          <th style="width:90px">Due Date</th>
+          <th style="min-width:220px">Path to Green</th>
+        </tr></thead>
+        <tbody id="tb-risk">
+          <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ISSUES -->
+<div id="pg-issue" class="page">
+  <div class="fbar">
+    <span class="fbar-lbl">Show</span>
+    <button class="fbtn active" onclick="setFilter(this,'issue','all')">All Open</button>
+    <button class="fbtn" onclick="setFilter(this,'issue','Active')">Active</button>
+    <button class="fbtn" onclick="setFilter(this,'issue','Ongoing Mitigation')">Ongoing Mitigation</button>
+    <button class="fbtn" onclick="setFilter(this,'issue','Accepted')">Accepted</button>
+    <div class="fbar-sep"></div>
+    <span class="fbar-ct" id="issue-ct"></span>
+  </div>
+  <div class="content">
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:150px">ID</th>
+          <th>Title &amp; Description</th>
+          <th style="width:110px">Status</th>
+          <th style="width:110px">Owner</th>
+          <th style="width:90px">Due Date</th>
+          <th style="min-width:220px">Path to Green</th>
+        </tr></thead>
+        <tbody id="tb-issue">
+          <tr><td colspan="6"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div id="pg-action" class="page">
+  <div class="fbar">
+    <span class="fbar-lbl">Show</span>
+    <button class="fbtn active" onclick="setFilter(this,'action','all')">All Open</button>
+    <button class="fbtn" onclick="setFilter(this,'action','Active')">Active</button>
+    <button class="fbtn" onclick="setFilter(this,'action','Ongoing Mitigation')">Ongoing Mitigation</button>
+    <div class="fbar-sep"></div>
+    <span class="fbar-ct" id="action-ct"></span>
+  </div>
+  <div class="content">
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:150px">ID</th>
+          <th>Title &amp; Description</th>
+          <th style="width:110px">Status</th>
+          <th style="width:110px">Owner</th>
+          <th style="width:90px">Due Date</th>
+          <th style="min-width:220px">Path to Green</th>
+        </tr></thead>
+        <tbody id="tb-action">
+          <tr><td colspan="6"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DECISIONS -->
+<div id="pg-decision" class="page">
+  <div class="fbar">
+    <span class="fbar-lbl">Show</span>
+    <button class="fbtn active" onclick="setFilter(this,'decision','all')">All Open</button>
+    <button class="fbtn" onclick="setFilter(this,'decision','Active')">Active</button>
+    <div class="fbar-sep"></div>
+    <span class="fbar-ct" id="decision-ct"></span>
+  </div>
+  <div class="content">
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:150px">ID</th>
+          <th>Title &amp; Description</th>
+          <th style="width:110px">Status</th>
+          <th style="width:110px">Owner</th>
+          <th style="width:90px">Due Date</th>
+          <th style="min-width:220px">Path to Green</th>
+        </tr></thead>
+        <tbody id="tb-decision">
+          <tr><td colspan="6"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <span>DAKAR 2026 TEC · DELOITTE PMO · CONFIDENTIAL — IOC / YOGOC / GLOBAL LEADERSHIP</span>
+  <span>RAID SHEET 7427364280553348 · AUTO-REFRESH EVERY 30 MIN · WAT (UTC+0)</span>
+</div>
+
+<script>
+// ─── PAGE SWITCHING ────────────────────────────────────────────────────────
+const TABS = ['risk','issue','action','decision'];
+function showTab(id){
+  TABS.forEach(t => {
+    document.getElementById('pg-'+t).classList.toggle('active', t===id);
+    document.querySelectorAll('.tab')[TABS.indexOf(t)].classList.toggle('active', t===id);
+  });
+}
+
+// ─── FILTERS STATE ─────────────────────────────────────────────────────────
+const FILTERS = { risk:'all', issue:'all', action:'all', decision:'all' };
+
+function setFilter(btn, type, val){
+  FILTERS[type] = val;
+  btn.closest('.fbar').querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render(type);
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function fmtDate(d){
+  if(!d) return '—';
+  const dt = new Date(d);
+  if(isNaN(dt)) return d;
+  return `${dt.getUTCDate()} ${MN[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`;
+}
+
+function dueCls(d){
+  if(!d) return 'due-nd';
+  const dt = new Date(d), now = new Date();
+  if(dt < now)              return 'due-ov';
+  if((dt-now)/864e5 <= 14) return 'due-sn';
+  return 'due-ok';
+}
+
+function parseRating(v){
+  if(!v || v === '#INVALID OPERATION') return 0;
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+}
+
+function ratingCls(r){
+  if(r >= 16) return 'rb-crit';
+  if(r >= 12) return 'rb-high';
+  if(r >= 6)  return 'rb-med';
+  if(r > 0)   return 'rb-low';
+  return 'rb-zero';
+}
+
+function ratingLabel(r){
+  if(r >= 16) return 'CRITICAL';
+  if(r >= 12) return 'HIGH';
+  if(r >= 6)  return 'MEDIUM';
+  if(r > 0)   return 'LOW';
+  return 'UNRATED';
+}
+
+function statusPill(s){
+  if(!s) return '<span class="sp sp-active">Active</span>';
+  const sl = s.toLowerCase();
+  if(sl.includes('close'))   return `<span class="sp sp-closed">Closed</span>`;
+  if(sl.includes('ongoing')) return `<span class="sp sp-ongoing">Ongoing</span>`;
+  if(sl.includes('accept'))  return `<span class="sp sp-accepted">Accepted</span>`;
+  return `<span class="sp sp-active">${s}</span>`;
+}
+
+// ─── GLOBAL DATA ───────────────────────────────────────────────────────────
+let DATA = [];
+
+// ─── RENDER FUNCTIONS ──────────────────────────────────────────────────────
+function render(type){
+  if(type === 'risk') renderRisks();
+  else renderGeneral(type);
+}
+
+function renderRisks(){
+  const all = DATA.filter(r =>
+    r.status !== 'Closed' && (
+      r.type === 'Risk' ||
+      (r.id||'').toLowerCase().startsWith('risk_') ||
+      (!r.type && /^_\d+$/.test(r.id||''))
+    )
+  ).sort((a,b) => b.rating - a.rating);
+
+  // KPIs
+  const fn = (lo,hi) => all.filter(r => r.rating >= lo && (hi==null||r.rating < hi)).length;
+  document.getElementById('k-crit').textContent  = fn(16,null);
+  document.getElementById('k-high').textContent  = fn(12,16);
+  document.getElementById('k-med').textContent   = fn(6,12);
+  document.getElementById('k-low').textContent   = fn(0,6);
+  document.getElementById('k-total').textContent = all.length;
+  document.getElementById('cnt-risk').textContent = all.length;
+
+  const filtered = FILTERS.risk === 'all' ? all : all.filter(r => r.status === FILTERS.risk);
+  document.getElementById('risk-ct').textContent = `${filtered.length} of ${all.length} risks`;
+
+  const tb = document.getElementById('tb-risk');
+  if(!filtered.length){
+    tb.innerHTML = `<tr><td colspan="7"><div class="empty-txt">No risks match this filter</div></td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = filtered.map((r, i) => {
+    const rank  = i + 1;
+    const rCls  = ratingCls(r.rating);
+    const rLbl  = ratingLabel(r.rating);
+    const rVal  = r.rating > 0 ? r.rating : '—';
+    const formula = r.impact > 0 && r.lik > 0 ? `${r.impact} × ${r.lik}` : '';
+
+    return `<tr>
+      <td><div class="rank${rank<=3?' top':''}">${rank}</div></td>
+      <td>
+        <div class="rb-wrap">
+          <div class="rb ${rCls}">${rVal}</div>
+          <div class="rb-meta">
+            <div class="rb-label">${rLbl}</div>
+            ${formula ? `<div class="rb-formula">${formula}</div>` : ''}
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="margin-bottom:4px">
+          <span class="iid">${r.id}</span>${r.ref ? `<span class="iref">${r.ref}</span>` : ''}
+        </div>
+        <div class="ititle">${r.title}</div>
+        ${r.desc ? `<div class="idesc">${r.desc.slice(0,240)}${r.desc.length>240?'…':''}</div>` : ''}
+        ${r.service ? `<div class="isvc">📍 ${r.service.slice(0,90)}</div>` : ''}
+      </td>
+      <td>${statusPill(r.status)}</td>
+      <td><div class="own">${r.owner}</div></td>
+      <td><div class="due ${dueCls(r.due)}">${fmtDate(r.due)}</div></td>
+      <td><div class="p2g">${(r.p2g||'—').slice(0,220)}${r.p2g&&r.p2g.length>220?'…':''}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderGeneral(type){
+  const typeMap = {
+    issue:    ['Issue'],
+    action:   ['Action Item'],
+    decision: ['Decision'],
+  };
+
+  const all = DATA.filter(r =>
+    typeMap[type].includes(r.type) && r.status !== 'Closed'
+  ).sort((a,b) => {
+    const ord = s => s==='Active'?0:s==='Ongoing Mitigation'?1:2;
+    const d = ord(a.status) - ord(b.status);
+    if(d !== 0) return d;
+    if(!a.due && !b.due) return 0;
+    if(!a.due) return 1;
+    if(!b.due) return -1;
+    return new Date(a.due) - new Date(b.due);
+  });
+
+  document.getElementById('cnt-'+type).textContent = all.length;
+
+  const filtered = FILTERS[type] === 'all' ? all : all.filter(r => r.status === FILTERS[type]);
+  document.getElementById(type+'-ct').textContent = `${filtered.length} of ${all.length} items`;
+
+  const tb = document.getElementById('tb-'+type);
+  if(!filtered.length){
+    tb.innerHTML = `<tr><td colspan="6"><div class="empty-txt">No items match this filter</div></td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = filtered.map(r => `<tr>
+    <td>
+      <div class="iid">${r.id}</div>
+      ${r.ref ? `<div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${r.ref}</div>` : ''}
+    </td>
+    <td>
+      <div class="ititle">${r.title}</div>
+      ${r.desc ? `<div class="idesc">${r.desc.slice(0,220)}${r.desc.length>220?'…':''}</div>` : ''}
+      ${r.service ? `<div class="isvc">📍 ${r.service.slice(0,90)}</div>` : ''}
+    </td>
+    <td>${statusPill(r.status)}</td>
+    <td><div class="own">${r.owner}</div></td>
+    <td><div class="due ${dueCls(r.due)}">${fmtDate(r.due)}</div></td>
+    <td><div class="p2g">${(r.p2g||'—').slice(0,220)}${r.p2g&&r.p2g.length>220?'…':''}</div></td>
+  </tr>`).join('');
+}
+
+// ─── FETCH ─────────────────────────────────────────────────────────────────
+async function load(){
+  const syncEl = document.getElementById('last-sync');
+  if(syncEl) syncEl.textContent = 'Syncing…';
+
+  try {
+    const res = await fetch('/api/data?sheet=raid');
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const rows = json.rows || [];
+
+    DATA = rows.map(r => ({
+      id:      r['Unique Identifier'] || '',
+      ref:     r['Plan Reference']    || '',
+      title:   r['Title']             || '(no title)',
+      type:    r['Type']              || '',
+      desc:    r['Description']       || '',
+      due:     r['Due Date']          || '',
+      p2g:     r['Path to Green']     || '',
+      status:  r['Status']            || 'Active',
+      owner:   r['Owner']             || '—',
+      service: r['Impacted Service']  || '',
+      impact:  parseFloat(r['Impact'])      || 0,
+      lik:     parseFloat(r['Likelihood'])  || 0,
+      rating:  parseRating(r['Rating']),
+    }));
+
+    // Render all tabs
+    renderRisks();
+    renderGeneral('issue');
+    renderGeneral('action');
+    renderGeneral('decision');
+
+    const now = new Date();
+    const ts  = now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})
+              + ' '
+              + now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})
+              + ' WAT';
+    if(syncEl) syncEl.textContent = ts;
+    console.log('✓ RAID loaded', DATA.length, 'items');
+
+  } catch(err){
+    console.error('Load failed:', err);
+    if(syncEl) syncEl.textContent = 'Sync failed';
+    ['tb-risk','tb-issue','tb-action','tb-decision'].forEach(id => {
+      const tb = document.getElementById(id);
+      if(tb) tb.innerHTML = `<tr><td colspan="7"><div class="empty-txt">⚠ ${err.message} — check /api/data?sheet=raid</div></td></tr>`;
+    });
+  }
+}
+
+load();
+setInterval(load, 30 * 60 * 1000);
+</script>
+</body>
+</html>
