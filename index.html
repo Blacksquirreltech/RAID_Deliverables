@@ -45,6 +45,8 @@ body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size
 .tab.active{color:var(--ink);border-bottom-color:var(--ink)}
 .tab:hover:not(.active){color:var(--dim)}
 .tcnt{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:20px;font-weight:500;transition:all .15s}
+.tab.active.t-all .tcnt{background:var(--ink);color:#fff}
+.tab:not(.active).t-all .tcnt{background:var(--grey-lt);color:var(--grey)}
 .tab.active.t-risk .tcnt{background:var(--red);color:#fff}
 .tab:not(.active).t-risk .tcnt{background:var(--red-lt);color:var(--red)}
 .tab.active.t-issue .tcnt{background:var(--amber);color:#fff}
@@ -73,6 +75,12 @@ body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size
 .fbtn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 .fbar-sep{width:1px;height:16px;background:var(--border);margin:0 4px}
 .fbar-ct{font-family:var(--mono);font-size:9px;color:var(--muted);margin-left:auto}
+.search-wrap{position:relative;display:flex;align-items:center;margin-left:auto}
+.search-input{font-family:var(--mono);font-size:10px;padding:5px 10px 5px 28px;border:1px solid var(--border);border-radius:20px;background:var(--surf);color:var(--text);outline:none;width:200px;transition:all .15s}
+.search-input:focus{border-color:var(--ink);width:260px}
+.search-input::placeholder{color:var(--muted)}
+.search-icon{position:absolute;left:9px;font-size:11px;color:var(--muted);pointer-events:none}
+.fbar-ct2{font-family:var(--mono);font-size:9px;color:var(--muted);margin-left:12px;white-space:nowrap}
 
 /* SCROLL CONTENT */
 .content{flex:1;overflow-y:auto;overflow-x:hidden}
@@ -158,8 +166,12 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
 </div>
 
 <div class="tabs">
-  <div class="tab t-risk active" onclick="showTab('risk')">
-    ⬛ Risks — Highest to Lowest
+  <div class="tab t-all active" onclick="showTab('all')">
+    All Open
+    <span class="tcnt" id="cnt-all">–</span>
+  </div>
+  <div class="tab t-risk" onclick="showTab('risk')">
+    ⬛ Risks
     <span class="tcnt" id="cnt-risk">–</span>
   </div>
   <div class="tab t-issue" onclick="showTab('issue')">
@@ -167,12 +179,52 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
     <span class="tcnt" id="cnt-issue">–</span>
   </div>
   <div class="tab t-action" onclick="showTab('action')">
-    🔵 Action Items
+    🔵 Actions
     <span class="tcnt" id="cnt-action">–</span>
   </div>
   <div class="tab t-decision" onclick="showTab('decision')">
     🟣 Decisions
     <span class="tcnt" id="cnt-decision">–</span>
+  </div>
+</div>
+
+<!-- ALL OPEN -->
+<div id="pg-all" class="page active">
+  <div class="fbar">
+    <span class="fbar-lbl">Show</span>
+    <button class="fbtn active" onclick="setFilter(this,'all','all')">All Types</button>
+    <button class="fbtn" onclick="setFilter(this,'all','Risk')">Risks</button>
+    <button class="fbtn" onclick="setFilter(this,'all','Issue')">Issues</button>
+    <button class="fbtn" onclick="setFilter(this,'all','Action Item')">Actions</button>
+    <button class="fbtn" onclick="setFilter(this,'all','Decision')">Decisions</button>
+    <div class="fbar-sep"></div>
+    <button class="fbtn" onclick="setFilter(this,'all','Active')">Active</button>
+    <button class="fbtn" onclick="setFilter(this,'all','Ongoing Mitigation')">Ongoing</button>
+    <div class="fbar-sep"></div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-all" type="text" placeholder="Search title, ID, owner…" oninput="render('all')">
+    </div>
+    <span class="fbar-ct2" id="all-ct"></span>
+  </div>
+  <div class="content">
+    <div class="twrap">
+      <table>
+        <thead><tr>
+          <th style="width:60px">Type</th>
+          <th style="width:90px">Rating</th>
+          <th style="width:140px">ID</th>
+          <th>Title &amp; Description</th>
+          <th style="width:110px">Status</th>
+          <th style="width:110px">Owner</th>
+          <th style="width:90px">Due Date</th>
+          <th style="min-width:200px">Path to Green</th>
+        </tr></thead>
+        <tbody id="tb-all">
+          <tr><td colspan="8"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -212,7 +264,11 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
     <button class="fbtn" onclick="setFilter(this,'risk','Ongoing Mitigation')">Ongoing Mitigation</button>
     <button class="fbtn" onclick="setFilter(this,'risk','Accepted')">Accepted</button>
     <div class="fbar-sep"></div>
-    <span class="fbar-ct" id="risk-ct"></span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-risk" type="text" placeholder="Search title, ID, owner…" oninput="render('risk')">
+    </div>
+    <span class="fbar-ct2" id="risk-ct"></span>
   </div>
   <div class="content">
     <div class="twrap">
@@ -243,7 +299,11 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
     <button class="fbtn" onclick="setFilter(this,'issue','Ongoing Mitigation')">Ongoing Mitigation</button>
     <button class="fbtn" onclick="setFilter(this,'issue','Accepted')">Accepted</button>
     <div class="fbar-sep"></div>
-    <span class="fbar-ct" id="issue-ct"></span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-issue" type="text" placeholder="Search title, ID, owner…" oninput="render('issue')">
+    </div>
+    <span class="fbar-ct2" id="issue-ct"></span>
   </div>
   <div class="content">
     <div class="twrap">
@@ -272,7 +332,11 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
     <button class="fbtn" onclick="setFilter(this,'action','Active')">Active</button>
     <button class="fbtn" onclick="setFilter(this,'action','Ongoing Mitigation')">Ongoing Mitigation</button>
     <div class="fbar-sep"></div>
-    <span class="fbar-ct" id="action-ct"></span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-action" type="text" placeholder="Search title, ID, owner…" oninput="render('action')">
+    </div>
+    <span class="fbar-ct2" id="action-ct"></span>
   </div>
   <div class="content">
     <div class="twrap">
@@ -300,7 +364,11 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
     <button class="fbtn active" onclick="setFilter(this,'decision','all')">All Open</button>
     <button class="fbtn" onclick="setFilter(this,'decision','Active')">Active</button>
     <div class="fbar-sep"></div>
-    <span class="fbar-ct" id="decision-ct"></span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="search-decision" type="text" placeholder="Search title, ID, owner…" oninput="render('decision')">
+    </div>
+    <span class="fbar-ct2" id="decision-ct"></span>
   </div>
   <div class="content">
     <div class="twrap">
@@ -328,7 +396,7 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
 
 <script>
 // ─── PAGE SWITCHING ────────────────────────────────────────────────────────
-const TABS = ['risk','issue','action','decision'];
+const TABS = ['all','risk','issue','action','decision'];
 function showTab(id){
   TABS.forEach(t => {
     document.getElementById('pg-'+t).classList.toggle('active', t===id);
@@ -337,7 +405,7 @@ function showTab(id){
 }
 
 // ─── FILTERS STATE ─────────────────────────────────────────────────────────
-const FILTERS = { risk:'all', issue:'all', action:'all', decision:'all' };
+const FILTERS = { all:'all', risk:'all', issue:'all', action:'all', decision:'all' };
 
 function setFilter(btn, type, val){
   FILTERS[type] = val;
@@ -399,9 +467,97 @@ function statusPill(s){
 let DATA = [];
 
 // ─── RENDER FUNCTIONS ──────────────────────────────────────────────────────
+function searchVal(type){
+  const el = document.getElementById('search-'+type);
+  return el ? el.value.trim().toLowerCase() : '';
+}
+
+function matchesSearch(r, q){
+  if(!q) return true;
+  return [r.id, r.title, r.owner, r.desc, r.ref, r.service]
+    .some(v => v && v.toLowerCase().includes(q));
+}
+
 function render(type){
-  if(type === 'risk') renderRisks();
+  if(type === 'all')  renderAll();
+  else if(type === 'risk') renderRisks();
   else renderGeneral(type);
+}
+
+
+function renderAll(){
+  const typeMap = {all:null, Risk:'Risk', Issue:'Issue', 'Action Item':'Action Item', Decision:'Decision', Active:'Active', 'Ongoing Mitigation':'Ongoing Mitigation'};
+  const f = FILTERS.all;
+  const q = searchVal('all');
+
+  // Determine filter type
+  const statusFilters = ['Active','Ongoing Mitigation'];
+  const typeFilters   = ['Risk','Issue','Action Item','Decision'];
+
+  let items = DATA.filter(r => r.status !== 'Closed');
+
+  if(typeFilters.includes(f)){
+    items = items.filter(r => r.type === f);
+  } else if(statusFilters.includes(f)){
+    items = items.filter(r => r.status === f);
+  }
+
+  if(q) items = items.filter(r => matchesSearch(r, q));
+
+  // Sort: risks by rating desc, then by status, then by due date
+  items.sort((a,b) => {
+    // Risks come first within their group
+    const typeOrd = t => t==='Risk'?0:t==='Issue'?1:t==='Action Item'?2:3;
+    const to = typeOrd(a.type) - typeOrd(b.type);
+    if(to !== 0) return to;
+    // Within risks: by rating desc
+    if(a.type === 'Risk' && b.type === 'Risk') return b.rating - a.rating;
+    // Others: Active first, then by due date
+    const statusOrd = s => s==='Active'?0:s==='Ongoing Mitigation'?1:2;
+    const so = statusOrd(a.status) - statusOrd(b.status);
+    if(so !== 0) return so;
+    if(!a.due && !b.due) return 0;
+    if(!a.due) return 1;
+    if(!b.due) return -1;
+    return new Date(a.due) - new Date(b.due);
+  });
+
+  document.getElementById('cnt-all').textContent = DATA.filter(r=>r.status!=='Closed').length;
+  document.getElementById('all-ct').textContent  = `${items.length} items`;
+
+  const tb = document.getElementById('tb-all');
+  if(!items.length){
+    tb.innerHTML = `<tr><td colspan="8"><div class="empty-txt">No items match</div></td></tr>`;
+    return;
+  }
+
+  const typePill = t => {
+    if(t==='Risk')        return `<span class="sp sp-active" style="background:var(--red-lt);color:var(--red);border-color:rgba(192,57,43,.15)">Risk</span>`;
+    if(t==='Issue')       return `<span class="sp sp-ongoing">Issue</span>`;
+    if(t==='Action Item') return `<span class="sp sp-accepted" style="background:var(--blue-lt);color:var(--blue);border-color:rgba(26,95,168,.15)">Action</span>`;
+    if(t==='Decision')    return `<span class="sp" style="background:var(--purple-lt);color:var(--purple);border:1px solid rgba(107,63,160,.15)">Decision</span>`;
+    return `<span class="sp">${t||'?'}</span>`;
+  };
+
+  tb.innerHTML = items.map(r => {
+    const rCls = ratingCls(r.rating);
+    const rVal = r.rating > 0 ? r.rating : '—';
+    return `<tr>
+      <td>${typePill(r.type)}</td>
+      <td>
+        ${r.type==='Risk' ? `<div class="rb-wrap"><div class="rb ${rCls}" style="width:36px;height:36px;font-size:18px">${rVal}</div></div>` : '<div class="rb-label" style="color:var(--muted)">—</div>'}
+      </td>
+      <td><div class="iid">${r.id}</div>${r.ref?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${r.ref}</div>`:''}</td>
+      <td>
+        <div class="ititle">${r.title}</div>
+        ${r.desc?`<div class="idesc">${r.desc.slice(0,180)}${r.desc.length>180?'…':''}</div>`:''}
+      </td>
+      <td>${statusPill(r.status)}</td>
+      <td><div class="own">${r.owner}</div></td>
+      <td><div class="due ${dueCls(r.due)}">${fmtDate(r.due)}</div></td>
+      <td><div class="p2g">${(r.p2g||'—').slice(0,180)}${r.p2g&&r.p2g.length>180?'…':''}</div></td>
+    </tr>`;
+  }).join('');
 }
 
 function renderRisks(){
@@ -422,7 +578,9 @@ function renderRisks(){
   document.getElementById('k-total').textContent = all.length;
   document.getElementById('cnt-risk').textContent = all.length;
 
-  const filtered = FILTERS.risk === 'all' ? all : all.filter(r => r.status === FILTERS.risk);
+  let filtered = FILTERS.risk === 'all' ? all : all.filter(r => r.status === FILTERS.risk);
+  const q_risk = searchVal('risk');
+  if(q_risk) filtered = filtered.filter(r => matchesSearch(r, q_risk));
   document.getElementById('risk-ct').textContent = `${filtered.length} of ${all.length} risks`;
 
   const tb = document.getElementById('tb-risk');
@@ -486,7 +644,9 @@ function renderGeneral(type){
 
   document.getElementById('cnt-'+type).textContent = all.length;
 
-  const filtered = FILTERS[type] === 'all' ? all : all.filter(r => r.status === FILTERS[type]);
+  let filtered = FILTERS[type] === 'all' ? all : all.filter(r => r.status === FILTERS[type]);
+  const q_gen = searchVal(type);
+  if(q_gen) filtered = filtered.filter(r => matchesSearch(r, q_gen));
   document.getElementById(type+'-ct').textContent = `${filtered.length} of ${all.length} items`;
 
   const tb = document.getElementById('tb-'+type);
@@ -540,6 +700,7 @@ async function load(){
     }));
 
     // Render all tabs
+    renderAll();
     renderRisks();
     renderGeneral('issue');
     renderGeneral('action');
