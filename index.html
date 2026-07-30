@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#0a0c12;--paper:#f4f3ee;--surf:#ffffff;--surf2:#f0efe9;
+  --ink:#0a0c12;--paper:#f4f3ee;--surf:#fff;--surf2:#f0efe9;
   --border:#e2e0d8;--border2:#ccc9bc;
-  --gold:#c8922a;--gold-lt:#f5e4c0;
+  --gold:#c8922a;
   --red:#c0392b;--red-lt:#fbeae8;
   --amber:#d4720c;--amber-lt:#fdf0e0;
   --green:#1a7a4a;--green-lt:#e4f5ec;
@@ -25,7 +25,6 @@
 html,body{height:100%}
 body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size:13px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
-/* HEADER */
 .hdr{background:var(--ink);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .hdr-l{display:flex;align-items:center;gap:20px}
 .badge{font-family:var(--disp);font-size:24px;letter-spacing:4px;color:var(--gold)}
@@ -39,111 +38,102 @@ body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size
 .live-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* TABS */
 .tabs{background:var(--surf);border-bottom:2px solid var(--border);padding:0 28px;display:flex;flex-shrink:0}
-.tab{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:13px 22px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;user-select:none;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:13px 20px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;user-select:none;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .tab.active{color:var(--ink);border-bottom-color:var(--ink)}
 .tab:hover:not(.active){color:var(--dim)}
-.tcnt{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:20px;font-weight:500;transition:all .15s}
-.tab.active.t-all .tcnt{background:var(--ink);color:#fff}
-.tab:not(.active).t-all .tcnt{background:var(--grey-lt);color:var(--grey)}
-.tab.active.t-risk .tcnt{background:var(--red);color:#fff}
-.tab:not(.active).t-risk .tcnt{background:var(--red-lt);color:var(--red)}
-.tab.active.t-issue .tcnt{background:var(--amber);color:#fff}
-.tab:not(.active).t-issue .tcnt{background:var(--amber-lt);color:var(--amber)}
-.tab.active.t-action .tcnt{background:var(--blue);color:#fff}
-.tab:not(.active).t-action .tcnt{background:var(--blue-lt);color:var(--blue)}
-.tab.active.t-decision .tcnt{background:var(--purple);color:#fff}
-.tab:not(.active).t-decision .tcnt{background:var(--purple-lt);color:var(--purple)}
+.tcnt{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:20px;font-weight:500;background:var(--grey-lt);color:var(--grey)}
+.tab.t-all.active   .tcnt{background:var(--ink);color:#fff}
+.tab.t-risk.active  .tcnt{background:var(--red);color:#fff}
+.tab.t-issue.active .tcnt{background:var(--amber);color:#fff}
+.tab.t-act.active   .tcnt{background:var(--blue);color:#fff}
+.tab.t-dec.active   .tcnt{background:var(--purple);color:#fff}
+.tab.t-risk:not(.active)  .tcnt{background:var(--red-lt);color:var(--red)}
+.tab.t-issue:not(.active) .tcnt{background:var(--amber-lt);color:var(--amber)}
+.tab.t-act:not(.active)   .tcnt{background:var(--blue-lt);color:var(--blue)}
+.tab.t-dec:not(.active)   .tcnt{background:var(--purple-lt);color:var(--purple)}
 
-/* PAGES */
 .page{display:none;flex:1;overflow:hidden;flex-direction:column}
 .page.active{display:flex}
 
-/* KPI STRIP */
 .kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);flex-shrink:0}
 .kpi{background:var(--surf);padding:14px 20px}
 .kpi-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
 .kpi-val{font-family:var(--disp);font-size:32px;letter-spacing:1px;line-height:1}
 .kpi-sub{font-size:10px;color:var(--dim);margin-top:3px}
 
-/* FILTER BAR */
-.fbar{padding:11px 28px;background:var(--surf);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.fbar-lbl{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-right:4px}
-.fbtn{font-family:var(--mono);font-size:9px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;transition:all .12s;letter-spacing:.5px}
-.fbtn:hover{background:var(--surf2);border-color:var(--border2)}
+.fbar{padding:10px 28px;background:var(--surf);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.fbar-lbl{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;flex-shrink:0}
+.fbtn{font-family:var(--mono);font-size:9px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;transition:all .12s;flex-shrink:0}
+.fbtn:hover{background:var(--surf2)}
 .fbtn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-.fbar-sep{width:1px;height:16px;background:var(--border);margin:0 4px}
-.fbar-ct{font-family:var(--mono);font-size:9px;color:var(--muted);margin-left:auto}
-.search-wrap{position:relative;display:flex;align-items:center;margin-left:auto}
-.search-input{font-family:var(--mono);font-size:10px;padding:5px 10px 5px 28px;border:1px solid var(--border);border-radius:20px;background:var(--surf);color:var(--text);outline:none;width:200px;transition:all .15s}
-.search-input:focus{border-color:var(--ink);width:260px}
-.search-input::placeholder{color:var(--muted)}
-.search-icon{position:absolute;left:9px;font-size:11px;color:var(--muted);pointer-events:none}
-.fbar-ct2{font-family:var(--mono);font-size:9px;color:var(--muted);margin-left:12px;white-space:nowrap}
+.fbar-sep{width:1px;height:16px;background:var(--border);margin:0 2px;flex-shrink:0}
+.fbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.sbox-wrap{position:relative;display:flex;align-items:center}
+.sbox{font-family:var(--mono);font-size:10px;padding:5px 10px 5px 28px;border:1px solid var(--border);border-radius:20px;background:var(--surf);color:var(--text);outline:none;width:200px;transition:width .15s}
+.sbox:focus{border-color:var(--border2);width:250px}
+.sbox::placeholder{color:var(--muted)}
+.sicon{position:absolute;left:9px;font-size:11px;pointer-events:none}
+.fbar-ct{font-family:var(--mono);font-size:9px;color:var(--muted);white-space:nowrap}
 
-/* SCROLL CONTENT */
-.content{flex:1;overflow-y:auto;overflow-x:hidden}
+.content{flex:1;overflow-y:auto}
 .content::-webkit-scrollbar{width:5px}
 .content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 .twrap{padding:20px 28px 32px}
 
-/* TABLES */
 table{width:100%;border-collapse:collapse}
 thead th{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;padding:9px 14px;text-align:left;border-bottom:2px solid var(--border);font-weight:400;background:var(--surf);position:sticky;top:0;z-index:5;white-space:nowrap}
-tbody td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:12px;color:var(--dim)}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:12px;color:var(--dim)}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:rgba(0,0,0,.018)}
 
-/* RATING BLOCK */
 .rb-wrap{display:flex;align-items:center;gap:10px}
-.rb{width:46px;height:46px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:22px;line-height:1;flex-shrink:0}
+.rb{width:44px;height:44px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:22px;line-height:1;flex-shrink:0}
+.rb-sm{width:34px;height:34px;font-size:17px;border-radius:5px}
 .rb-crit{background:#c0392b;color:#fff}
 .rb-high{background:#e8620c;color:#fff}
 .rb-med{background:#d4720c;color:#fff}
 .rb-low{background:#5a8a5a;color:#fff}
 .rb-zero{background:var(--grey-lt);color:var(--muted)}
 .rb-meta{display:flex;flex-direction:column;gap:2px}
-.rb-formula{font-family:var(--mono);font-size:9px;color:var(--dim);font-weight:500}
 .rb-label{font-family:var(--mono);font-size:8px;color:var(--muted)}
+.rb-formula{font-family:var(--mono);font-size:9px;color:var(--dim)}
 
-/* RANK NUMBER */
 .rank{font-family:var(--disp);font-size:20px;color:var(--border2);width:28px;text-align:center}
 .rank.top{color:var(--gold)}
 
-/* ITEM CONTENT */
-.iid{font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(200,146,42,.08);padding:2px 6px;border-radius:3px;border:1px solid rgba(200,146,42,.18);display:inline-block;margin-bottom:5px}
-.iref{font-family:var(--mono);font-size:8px;color:var(--muted);margin-left:4px}
-.ititle{font-weight:600;color:var(--text);font-size:13px;line-height:1.3;margin-bottom:4px}
+.iid{font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(200,146,42,.08);padding:2px 6px;border-radius:3px;border:1px solid rgba(200,146,42,.18);display:inline-block;margin-bottom:4px}
+.iref{font-family:var(--mono);font-size:8px;color:var(--muted);margin-left:5px}
+.ititle{font-weight:600;color:var(--text);font-size:13px;line-height:1.3;margin-bottom:3px}
 .idesc{font-size:11.5px;color:var(--dim);line-height:1.45;max-width:500px}
-.isvc{font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:5px}
+.isvc{font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:4px}
 
-/* STATUS PILLS */
 .sp{font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-block}
-.sp-active{background:var(--red-lt);color:var(--red);border:1px solid rgba(192,57,43,.15)}
-.sp-ongoing{background:var(--amber-lt);color:var(--amber);border:1px solid rgba(212,114,12,.15)}
+.sp-active  {background:var(--red-lt);color:var(--red);border:1px solid rgba(192,57,43,.15)}
+.sp-ongoing {background:var(--amber-lt);color:var(--amber);border:1px solid rgba(212,114,12,.15)}
 .sp-accepted{background:var(--blue-lt);color:var(--blue);border:1px solid rgba(26,95,168,.15)}
-.sp-closed{background:var(--green-lt);color:var(--green);border:1px solid rgba(26,122,74,.15)}
+.sp-closed  {background:var(--green-lt);color:var(--green);border:1px solid rgba(26,122,74,.15)}
 
-/* OWNER / DATE */
+.tp{font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:20px;white-space:nowrap;display:inline-block}
+.tp-risk{background:var(--red-lt);color:var(--red)}
+.tp-issue{background:var(--amber-lt);color:var(--amber)}
+.tp-act{background:var(--blue-lt);color:var(--blue)}
+.tp-dec{background:var(--purple-lt);color:var(--purple)}
+
 .own{font-family:var(--mono);font-size:10px;color:var(--dim)}
 .due{font-family:var(--mono);font-size:10px;white-space:nowrap}
 .due-ov{color:var(--red);font-weight:600}
 .due-sn{color:var(--amber);font-weight:600}
 .due-ok{color:var(--blue)}
 .due-nd{color:var(--muted)}
-
-/* PATH TO GREEN */
 .p2g{font-size:11px;color:var(--dim);line-height:1.45;max-width:260px}
 
-/* EMPTY / LOADING */
-.loading-wrap{padding:60px;text-align:center}
+.load-wrap{padding:60px;text-align:center}
 .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--ink);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.empty-txt{padding:48px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted)}
+.load-txt{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.empty{font-family:var(--mono);font-size:10px;color:var(--muted);padding:48px;text-align:center;display:block}
 
-/* FOOTER */
 .ftr{border-top:1px solid var(--border);background:var(--surf);padding:8px 28px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;letter-spacing:1px;color:var(--muted);flex-shrink:0}
 </style>
 </head>
@@ -166,227 +156,143 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
 </div>
 
 <div class="tabs">
-  <div class="tab t-all active" onclick="showTab('all')">
-    All Open
-    <span class="tcnt" id="cnt-all">–</span>
-  </div>
-  <div class="tab t-risk" onclick="showTab('risk')">
-    ⬛ Risks
-    <span class="tcnt" id="cnt-risk">–</span>
-  </div>
-  <div class="tab t-issue" onclick="showTab('issue')">
-    🟡 Issues
-    <span class="tcnt" id="cnt-issue">–</span>
-  </div>
-  <div class="tab t-action" onclick="showTab('action')">
-    🔵 Actions
-    <span class="tcnt" id="cnt-action">–</span>
-  </div>
-  <div class="tab t-decision" onclick="showTab('decision')">
-    🟣 Decisions
-    <span class="tcnt" id="cnt-decision">–</span>
-  </div>
+  <div class="tab t-all active" onclick="showTab('all')">All Open <span class="tcnt" id="cnt-all">–</span></div>
+  <div class="tab t-risk"       onclick="showTab('risk')">⬛ Risks <span class="tcnt" id="cnt-risk">–</span></div>
+  <div class="tab t-issue"      onclick="showTab('issue')">🟡 Issues <span class="tcnt" id="cnt-issue">–</span></div>
+  <div class="tab t-act"        onclick="showTab('act')">🔵 Actions <span class="tcnt" id="cnt-act">–</span></div>
+  <div class="tab t-dec"        onclick="showTab('dec')">🟣 Decisions <span class="tcnt" id="cnt-dec">–</span></div>
 </div>
 
-<!-- ALL OPEN -->
 <div id="pg-all" class="page active">
   <div class="fbar">
-    <span class="fbar-lbl">Show</span>
-    <button class="fbtn active" onclick="setFilter(this,'all','all')">All Types</button>
-    <button class="fbtn" onclick="setFilter(this,'all','Risk')">Risks</button>
-    <button class="fbtn" onclick="setFilter(this,'all','Issue')">Issues</button>
-    <button class="fbtn" onclick="setFilter(this,'all','Action Item')">Actions</button>
-    <button class="fbtn" onclick="setFilter(this,'all','Decision')">Decisions</button>
-    <div class="fbar-sep"></div>
-    <button class="fbtn" onclick="setFilter(this,'all','Active')">Active</button>
-    <button class="fbtn" onclick="setFilter(this,'all','Ongoing Mitigation')">Ongoing</button>
-    <div class="fbar-sep"></div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" id="search-all" type="text" placeholder="Search title, ID, owner…" oninput="render('all')">
-    </div>
-    <span class="fbar-ct2" id="all-ct"></span>
-  </div>
-  <div class="content">
-    <div class="twrap">
-      <table>
-        <thead><tr>
-          <th style="width:60px">Type</th>
-          <th style="width:90px">Rating</th>
-          <th style="width:140px">ID</th>
-          <th>Title &amp; Description</th>
-          <th style="width:110px">Status</th>
-          <th style="width:110px">Owner</th>
-          <th style="width:90px">Due Date</th>
-          <th style="min-width:200px">Path to Green</th>
-        </tr></thead>
-        <tbody id="tb-all">
-          <tr><td colspan="8"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
-        </tbody>
-      </table>
+    <span class="fbar-lbl">Filter</span>
+    <button class="fbtn active" onclick="sf(this,'all','all')">All</button>
+    <button class="fbtn" onclick="sf(this,'all','Active')">Active</button>
+    <button class="fbtn" onclick="sf(this,'all','Ongoing Mitigation')">Ongoing</button>
+    <button class="fbtn" onclick="sf(this,'all','Accepted')">Accepted</button>
+    <div class="fbar-right">
+      <div class="sbox-wrap"><span class="sicon">🔍</span><input class="sbox" id="q-all" placeholder="Search title, ID, owner…" oninput="renderAll()"></div>
+      <span class="fbar-ct" id="ct-all"></span>
     </div>
   </div>
+  <div class="content"><div class="twrap"><table>
+    <thead><tr>
+      <th style="width:70px">Type</th>
+      <th style="width:70px">Rating</th>
+      <th style="width:140px">ID</th>
+      <th>Title &amp; Description</th>
+      <th style="width:110px">Status</th>
+      <th style="width:110px">Owner</th>
+      <th style="width:90px">Due</th>
+      <th style="min-width:200px">Path to Green</th>
+    </tr></thead>
+    <tbody id="tb-all"><tr><td colspan="8"><div class="load-wrap"><div class="spinner"></div><div class="load-txt">Loading…</div></div></td></tr></tbody>
+  </table></div></div>
 </div>
 
-<!-- RISKS -->
-<div id="pg-risk" class="page active">
+<div id="pg-risk" class="page">
   <div class="kpi-strip">
-    <div class="kpi">
-      <div class="kpi-lbl">Critical (≥16)</div>
-      <div class="kpi-val" style="color:var(--red)" id="k-crit">–</div>
-      <div class="kpi-sub">Immediate escalation</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">High (12–15)</div>
-      <div class="kpi-val" style="color:#e8620c" id="k-high">–</div>
-      <div class="kpi-sub">Senior attention</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Medium (6–11)</div>
-      <div class="kpi-val" style="color:var(--amber)" id="k-med">–</div>
-      <div class="kpi-sub">Monitor closely</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Low / Unrated</div>
-      <div class="kpi-val" style="color:var(--grey)" id="k-low">–</div>
-      <div class="kpi-sub">Watch list</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-lbl">Total Open Risks</div>
-      <div class="kpi-val" style="color:var(--green)" id="k-total">–</div>
-      <div class="kpi-sub">Excl. closed</div>
-    </div>
+    <div class="kpi"><div class="kpi-lbl">Critical (≥16)</div><div class="kpi-val" style="color:var(--red)" id="k-crit">–</div><div class="kpi-sub">Immediate escalation</div></div>
+    <div class="kpi"><div class="kpi-lbl">High (12–15)</div><div class="kpi-val" style="color:#e8620c" id="k-high">–</div><div class="kpi-sub">Senior attention</div></div>
+    <div class="kpi"><div class="kpi-lbl">Medium (6–11)</div><div class="kpi-val" style="color:var(--amber)" id="k-med">–</div><div class="kpi-sub">Monitor closely</div></div>
+    <div class="kpi"><div class="kpi-lbl">Low / Unrated</div><div class="kpi-val" style="color:var(--grey)" id="k-low">–</div><div class="kpi-sub">Watch list</div></div>
+    <div class="kpi"><div class="kpi-lbl">Total Open Risks</div><div class="kpi-val" style="color:var(--green)" id="k-total">–</div><div class="kpi-sub">Excl. closed</div></div>
   </div>
   <div class="fbar">
-    <span class="fbar-lbl">Show</span>
-    <button class="fbtn active" onclick="setFilter(this,'risk','all')">All Open</button>
-    <button class="fbtn" onclick="setFilter(this,'risk','Active')">Active</button>
-    <button class="fbtn" onclick="setFilter(this,'risk','Ongoing Mitigation')">Ongoing Mitigation</button>
-    <button class="fbtn" onclick="setFilter(this,'risk','Accepted')">Accepted</button>
-    <div class="fbar-sep"></div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" id="search-risk" type="text" placeholder="Search title, ID, owner…" oninput="render('risk')">
-    </div>
-    <span class="fbar-ct2" id="risk-ct"></span>
-  </div>
-  <div class="content">
-    <div class="twrap">
-      <table>
-        <thead><tr>
-          <th style="width:36px">#</th>
-          <th style="width:160px">Rating</th>
-          <th>Risk Title &amp; Description</th>
-          <th style="width:110px">Status</th>
-          <th style="width:110px">Owner</th>
-          <th style="width:90px">Due Date</th>
-          <th style="min-width:220px">Path to Green</th>
-        </tr></thead>
-        <tbody id="tb-risk">
-          <tr><td colspan="7"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
-        </tbody>
-      </table>
+    <span class="fbar-lbl">Filter</span>
+    <button class="fbtn active" onclick="sf(this,'risk','all')">All Open</button>
+    <button class="fbtn" onclick="sf(this,'risk','Active')">Active</button>
+    <button class="fbtn" onclick="sf(this,'risk','Ongoing Mitigation')">Ongoing</button>
+    <button class="fbtn" onclick="sf(this,'risk','Accepted')">Accepted</button>
+    <div class="fbar-right">
+      <div class="sbox-wrap"><span class="sicon">🔍</span><input class="sbox" id="q-risk" placeholder="Search title, ID, owner…" oninput="renderRisks()"></div>
+      <span class="fbar-ct" id="ct-risk"></span>
     </div>
   </div>
+  <div class="content"><div class="twrap"><table>
+    <thead><tr>
+      <th style="width:36px">#</th>
+      <th style="width:160px">Rating</th>
+      <th>Risk Title &amp; Description</th>
+      <th style="width:110px">Status</th>
+      <th style="width:110px">Owner</th>
+      <th style="width:90px">Due</th>
+      <th style="min-width:220px">Path to Green</th>
+    </tr></thead>
+    <tbody id="tb-risk"><tr><td colspan="7"><div class="load-wrap"><div class="spinner"></div><div class="load-txt">Loading…</div></div></td></tr></tbody>
+  </table></div></div>
 </div>
 
-<!-- ISSUES -->
 <div id="pg-issue" class="page">
   <div class="fbar">
-    <span class="fbar-lbl">Show</span>
-    <button class="fbtn active" onclick="setFilter(this,'issue','all')">All Open</button>
-    <button class="fbtn" onclick="setFilter(this,'issue','Active')">Active</button>
-    <button class="fbtn" onclick="setFilter(this,'issue','Ongoing Mitigation')">Ongoing Mitigation</button>
-    <button class="fbtn" onclick="setFilter(this,'issue','Accepted')">Accepted</button>
-    <div class="fbar-sep"></div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" id="search-issue" type="text" placeholder="Search title, ID, owner…" oninput="render('issue')">
-    </div>
-    <span class="fbar-ct2" id="issue-ct"></span>
-  </div>
-  <div class="content">
-    <div class="twrap">
-      <table>
-        <thead><tr>
-          <th style="width:150px">ID</th>
-          <th>Title &amp; Description</th>
-          <th style="width:110px">Status</th>
-          <th style="width:110px">Owner</th>
-          <th style="width:90px">Due Date</th>
-          <th style="min-width:220px">Path to Green</th>
-        </tr></thead>
-        <tbody id="tb-issue">
-          <tr><td colspan="6"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
-        </tbody>
-      </table>
+    <span class="fbar-lbl">Filter</span>
+    <button class="fbtn active" onclick="sf(this,'issue','all')">All Open</button>
+    <button class="fbtn" onclick="sf(this,'issue','Active')">Active</button>
+    <button class="fbtn" onclick="sf(this,'issue','Ongoing Mitigation')">Ongoing</button>
+    <button class="fbtn" onclick="sf(this,'issue','Accepted')">Accepted</button>
+    <div class="fbar-right">
+      <div class="sbox-wrap"><span class="sicon">🔍</span><input class="sbox" id="q-issue" placeholder="Search title, ID, owner…" oninput="renderG('issue')"></div>
+      <span class="fbar-ct" id="ct-issue"></span>
     </div>
   </div>
+  <div class="content"><div class="twrap"><table>
+    <thead><tr>
+      <th style="width:150px">ID</th>
+      <th>Title &amp; Description</th>
+      <th style="width:110px">Status</th>
+      <th style="width:110px">Owner</th>
+      <th style="width:90px">Due</th>
+      <th style="min-width:220px">Path to Green</th>
+    </tr></thead>
+    <tbody id="tb-issue"><tr><td colspan="6"><div class="load-wrap"><div class="spinner"></div><div class="load-txt">Loading…</div></div></td></tr></tbody>
+  </table></div></div>
 </div>
 
-<!-- ACTIONS -->
-<div id="pg-action" class="page">
+<div id="pg-act" class="page">
   <div class="fbar">
-    <span class="fbar-lbl">Show</span>
-    <button class="fbtn active" onclick="setFilter(this,'action','all')">All Open</button>
-    <button class="fbtn" onclick="setFilter(this,'action','Active')">Active</button>
-    <button class="fbtn" onclick="setFilter(this,'action','Ongoing Mitigation')">Ongoing Mitigation</button>
-    <div class="fbar-sep"></div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" id="search-action" type="text" placeholder="Search title, ID, owner…" oninput="render('action')">
-    </div>
-    <span class="fbar-ct2" id="action-ct"></span>
-  </div>
-  <div class="content">
-    <div class="twrap">
-      <table>
-        <thead><tr>
-          <th style="width:150px">ID</th>
-          <th>Title &amp; Description</th>
-          <th style="width:110px">Status</th>
-          <th style="width:110px">Owner</th>
-          <th style="width:90px">Due Date</th>
-          <th style="min-width:220px">Path to Green</th>
-        </tr></thead>
-        <tbody id="tb-action">
-          <tr><td colspan="6"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
-        </tbody>
-      </table>
+    <span class="fbar-lbl">Filter</span>
+    <button class="fbtn active" onclick="sf(this,'act','all')">All Open</button>
+    <button class="fbtn" onclick="sf(this,'act','Active')">Active</button>
+    <button class="fbtn" onclick="sf(this,'act','Ongoing Mitigation')">Ongoing</button>
+    <div class="fbar-right">
+      <div class="sbox-wrap"><span class="sicon">🔍</span><input class="sbox" id="q-act" placeholder="Search title, ID, owner…" oninput="renderG('act')"></div>
+      <span class="fbar-ct" id="ct-act"></span>
     </div>
   </div>
+  <div class="content"><div class="twrap"><table>
+    <thead><tr>
+      <th style="width:150px">ID</th>
+      <th>Title &amp; Description</th>
+      <th style="width:110px">Status</th>
+      <th style="width:110px">Owner</th>
+      <th style="width:90px">Due</th>
+      <th style="min-width:220px">Path to Green</th>
+    </tr></thead>
+    <tbody id="tb-act"><tr><td colspan="6"><div class="load-wrap"><div class="spinner"></div><div class="load-txt">Loading…</div></div></td></tr></tbody>
+  </table></div></div>
 </div>
 
-<!-- DECISIONS -->
-<div id="pg-decision" class="page">
+<div id="pg-dec" class="page">
   <div class="fbar">
-    <span class="fbar-lbl">Show</span>
-    <button class="fbtn active" onclick="setFilter(this,'decision','all')">All Open</button>
-    <button class="fbtn" onclick="setFilter(this,'decision','Active')">Active</button>
-    <div class="fbar-sep"></div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" id="search-decision" type="text" placeholder="Search title, ID, owner…" oninput="render('decision')">
-    </div>
-    <span class="fbar-ct2" id="decision-ct"></span>
-  </div>
-  <div class="content">
-    <div class="twrap">
-      <table>
-        <thead><tr>
-          <th style="width:150px">ID</th>
-          <th>Title &amp; Description</th>
-          <th style="width:110px">Status</th>
-          <th style="width:110px">Owner</th>
-          <th style="width:90px">Due Date</th>
-          <th style="min-width:220px">Path to Green</th>
-        </tr></thead>
-        <tbody id="tb-decision">
-          <tr><td colspan="6"><div class="loading-wrap"><div class="spinner"></div><div class="loading-txt">Loading from Smartsheet…</div></div></td></tr>
-        </tbody>
-      </table>
+    <span class="fbar-lbl">Filter</span>
+    <button class="fbtn active" onclick="sf(this,'dec','all')">All Open</button>
+    <button class="fbtn" onclick="sf(this,'dec','Active')">Active</button>
+    <div class="fbar-right">
+      <div class="sbox-wrap"><span class="sicon">🔍</span><input class="sbox" id="q-dec" placeholder="Search title, ID, owner…" oninput="renderG('dec')"></div>
+      <span class="fbar-ct" id="ct-dec"></span>
     </div>
   </div>
+  <div class="content"><div class="twrap"><table>
+    <thead><tr>
+      <th style="width:150px">ID</th>
+      <th>Title &amp; Description</th>
+      <th style="width:110px">Status</th>
+      <th style="width:110px">Owner</th>
+      <th style="width:90px">Due</th>
+      <th style="min-width:220px">Path to Green</th>
+    </tr></thead>
+    <tbody id="tb-dec"><tr><td colspan="6"><div class="load-wrap"><div class="spinner"></div><div class="load-txt">Loading…</div></div></td></tr></tbody>
+  </table></div></div>
 </div>
 
 <div class="ftr">
@@ -395,337 +301,156 @@ tbody tr:hover td{background:rgba(0,0,0,.018)}
 </div>
 
 <script>
-// ─── PAGE SWITCHING ────────────────────────────────────────────────────────
-const TABS = ['all','risk','issue','action','decision'];
+const TABS=['all','risk','issue','act','dec'];
 function showTab(id){
-  TABS.forEach(t => {
-    document.getElementById('pg-'+t).classList.toggle('active', t===id);
-    document.querySelectorAll('.tab')[TABS.indexOf(t)].classList.toggle('active', t===id);
+  TABS.forEach(t=>{
+    document.getElementById('pg-'+t).classList.toggle('active',t===id);
+    document.querySelectorAll('.tab')[TABS.indexOf(t)].classList.toggle('active',t===id);
   });
 }
 
-// ─── FILTERS STATE ─────────────────────────────────────────────────────────
-const FILTERS = { all:'all', risk:'all', issue:'all', action:'all', decision:'all' };
-
-function setFilter(btn, type, val){
-  FILTERS[type] = val;
-  btn.closest('.fbar').querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+const F={all:'all',risk:'all',issue:'all',act:'all',dec:'all'};
+function sf(btn,tab,val){
+  F[tab]=val;
+  btn.closest('.fbar').querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  render(type);
+  if(tab==='all') renderAll();
+  else if(tab==='risk') renderRisks();
+  else renderG(tab);
 }
 
-// ─── HELPERS ───────────────────────────────────────────────────────────────
-const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function fmtDate(d){
-  if(!d) return '—';
-  const dt = new Date(d);
-  if(isNaN(dt)) return d;
-  return `${dt.getUTCDate()} ${MN[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`;
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fd(d){if(!d)return'—';const dt=new Date(d);if(isNaN(dt))return d;return`${dt.getUTCDate()} ${MN[dt.getUTCMonth()]} ${dt.getUTCFullYear()}`}
+function dc(d){if(!d)return'due-nd';const dt=new Date(d),n=new Date();if(dt<n)return'due-ov';if((dt-n)/864e5<=14)return'due-sn';return'due-ok'}
+function pr(v){if(!v||v==='#INVALID OPERATION')return 0;const n=parseFloat(v);return isNaN(n)?0:n}
+function rc(r){if(r>=16)return'rb-crit';if(r>=12)return'rb-high';if(r>=6)return'rb-med';if(r>0)return'rb-low';return'rb-zero'}
+function rl(r){if(r>=16)return'CRITICAL';if(r>=12)return'HIGH';if(r>=6)return'MEDIUM';if(r>0)return'LOW';return'UNRATED'}
+function sp(s){
+  if(!s)return'<span class="sp sp-active">Active</span>';
+  const sl=s.toLowerCase();
+  if(sl.includes('close'))return`<span class="sp sp-closed">Closed</span>`;
+  if(sl.includes('ongoing'))return`<span class="sp sp-ongoing">Ongoing</span>`;
+  if(sl.includes('accept'))return`<span class="sp sp-accepted">Accepted</span>`;
+  return`<span class="sp sp-active">${s}</span>`;
 }
-
-function dueCls(d){
-  if(!d) return 'due-nd';
-  const dt = new Date(d), now = new Date();
-  if(dt < now)              return 'due-ov';
-  if((dt-now)/864e5 <= 14) return 'due-sn';
-  return 'due-ok';
+function tp(t){
+  if(t==='Risk')return`<span class="tp tp-risk">Risk</span>`;
+  if(t==='Issue')return`<span class="tp tp-issue">Issue</span>`;
+  if(t==='Action Item')return`<span class="tp tp-act">Action</span>`;
+  if(t==='Decision')return`<span class="tp tp-dec">Decision</span>`;
+  return`<span class="tp">${t||'—'}</span>`;
 }
+function sq(tab){const e=document.getElementById('q-'+tab);return e?e.value.trim().toLowerCase():''}
+function ok(r,q){if(!q)return true;return[r.id,r.title,r.owner,r.desc,r.ref,r.service].some(v=>v&&v.toLowerCase().includes(q))}
+function sortSD(a){return a.slice().sort((x,y)=>{const o=s=>s==='Active'?0:s==='Ongoing Mitigation'?1:2;const d=o(x.status)-o(y.status);if(d)return d;if(!x.due&&!y.due)return 0;if(!x.due)return 1;if(!y.due)return-1;return new Date(x.due)-new Date(y.due)})}
 
-function parseRating(v){
-  if(!v || v === '#INVALID OPERATION') return 0;
-  const n = parseFloat(v);
-  return isNaN(n) ? 0 : n;
-}
-
-function ratingCls(r){
-  if(r >= 16) return 'rb-crit';
-  if(r >= 12) return 'rb-high';
-  if(r >= 6)  return 'rb-med';
-  if(r > 0)   return 'rb-low';
-  return 'rb-zero';
-}
-
-function ratingLabel(r){
-  if(r >= 16) return 'CRITICAL';
-  if(r >= 12) return 'HIGH';
-  if(r >= 6)  return 'MEDIUM';
-  if(r > 0)   return 'LOW';
-  return 'UNRATED';
-}
-
-function statusPill(s){
-  if(!s) return '<span class="sp sp-active">Active</span>';
-  const sl = s.toLowerCase();
-  if(sl.includes('close'))   return `<span class="sp sp-closed">Closed</span>`;
-  if(sl.includes('ongoing')) return `<span class="sp sp-ongoing">Ongoing</span>`;
-  if(sl.includes('accept'))  return `<span class="sp sp-accepted">Accepted</span>`;
-  return `<span class="sp sp-active">${s}</span>`;
-}
-
-// ─── GLOBAL DATA ───────────────────────────────────────────────────────────
-let DATA = [];
-
-// ─── RENDER FUNCTIONS ──────────────────────────────────────────────────────
-function searchVal(type){
-  const el = document.getElementById('search-'+type);
-  return el ? el.value.trim().toLowerCase() : '';
-}
-
-function matchesSearch(r, q){
-  if(!q) return true;
-  return [r.id, r.title, r.owner, r.desc, r.ref, r.service]
-    .some(v => v && v.toLowerCase().includes(q));
-}
-
-function render(type){
-  if(type === 'all')  renderAll();
-  else if(type === 'risk') renderRisks();
-  else renderGeneral(type);
-}
-
+let DATA=[];
 
 function renderAll(){
-  const typeMap = {all:null, Risk:'Risk', Issue:'Issue', 'Action Item':'Action Item', Decision:'Decision', Active:'Active', 'Ongoing Mitigation':'Ongoing Mitigation'};
-  const f = FILTERS.all;
-  const q = searchVal('all');
-
-  // Determine filter type
-  const statusFilters = ['Active','Ongoing Mitigation'];
-  const typeFilters   = ['Risk','Issue','Action Item','Decision'];
-
-  let items = DATA.filter(r => r.status !== 'Closed');
-
-  if(typeFilters.includes(f)){
-    items = items.filter(r => r.type === f);
-  } else if(statusFilters.includes(f)){
-    items = items.filter(r => r.status === f);
-  }
-
-  if(q) items = items.filter(r => matchesSearch(r, q));
-
-  // Sort: risks by rating desc, then by status, then by due date
-  items.sort((a,b) => {
-    // Risks come first within their group
-    const typeOrd = t => t==='Risk'?0:t==='Issue'?1:t==='Action Item'?2:3;
-    const to = typeOrd(a.type) - typeOrd(b.type);
-    if(to !== 0) return to;
-    // Within risks: by rating desc
-    if(a.type === 'Risk' && b.type === 'Risk') return b.rating - a.rating;
-    // Others: Active first, then by due date
-    const statusOrd = s => s==='Active'?0:s==='Ongoing Mitigation'?1:2;
-    const so = statusOrd(a.status) - statusOrd(b.status);
-    if(so !== 0) return so;
-    if(!a.due && !b.due) return 0;
-    if(!a.due) return 1;
-    if(!b.due) return -1;
-    return new Date(a.due) - new Date(b.due);
+  const open=DATA.filter(r=>r.status!=='Closed');
+  document.getElementById('cnt-all').textContent=open.length;
+  let items=open.filter(r=>F.all==='all'||r.status===F.all);
+  const q=sq('all');if(q)items=items.filter(r=>ok(r,q));
+  items.sort((a,b)=>{
+    const to=t=>t==='Risk'?0:t==='Issue'?1:t==='Action Item'?2:3;
+    const d=to(a.type)-to(b.type);if(d)return d;
+    if(a.type==='Risk')return b.rating-a.rating;
+    const o=s=>s==='Active'?0:s==='Ongoing Mitigation'?1:2;
+    const sd=o(a.status)-o(b.status);if(sd)return sd;
+    if(!a.due&&!b.due)return 0;if(!a.due)return 1;if(!b.due)return-1;
+    return new Date(a.due)-new Date(b.due);
   });
-
-  document.getElementById('cnt-all').textContent = DATA.filter(r=>r.status!=='Closed').length;
-  document.getElementById('all-ct').textContent  = `${items.length} items`;
-
-  const tb = document.getElementById('tb-all');
-  if(!items.length){
-    tb.innerHTML = `<tr><td colspan="8"><div class="empty-txt">No items match</div></td></tr>`;
-    return;
-  }
-
-  const typePill = t => {
-    if(t==='Risk')        return `<span class="sp sp-active" style="background:var(--red-lt);color:var(--red);border-color:rgba(192,57,43,.15)">Risk</span>`;
-    if(t==='Issue')       return `<span class="sp sp-ongoing">Issue</span>`;
-    if(t==='Action Item') return `<span class="sp sp-accepted" style="background:var(--blue-lt);color:var(--blue);border-color:rgba(26,95,168,.15)">Action</span>`;
-    if(t==='Decision')    return `<span class="sp" style="background:var(--purple-lt);color:var(--purple);border:1px solid rgba(107,63,160,.15)">Decision</span>`;
-    return `<span class="sp">${t||'?'}</span>`;
-  };
-
-  tb.innerHTML = items.map(r => {
-    const rCls = ratingCls(r.rating);
-    const rVal = r.rating > 0 ? r.rating : '—';
-    return `<tr>
-      <td>${typePill(r.type)}</td>
-      <td>
-        ${r.type==='Risk' ? `<div class="rb-wrap"><div class="rb ${rCls}" style="width:36px;height:36px;font-size:18px">${rVal}</div></div>` : '<div class="rb-label" style="color:var(--muted)">—</div>'}
-      </td>
+  document.getElementById('ct-all').textContent=`${items.length} items`;
+  const tb=document.getElementById('tb-all');
+  if(!items.length){tb.innerHTML=`<tr><td colspan="8"><span class="empty">No items match</span></td></tr>`;return}
+  tb.innerHTML=items.map(r=>{
+    const rv=r.rating>0?r.rating:'—';
+    return`<tr>
+      <td>${tp(r.type)}</td>
+      <td>${r.type==='Risk'?`<div class="rb rb-sm ${rc(r.rating)}">${rv}</div>`:'<span style="color:var(--muted)">—</span>'}</td>
       <td><div class="iid">${r.id}</div>${r.ref?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${r.ref}</div>`:''}</td>
-      <td>
-        <div class="ititle">${r.title}</div>
-        ${r.desc?`<div class="idesc">${r.desc.slice(0,180)}${r.desc.length>180?'…':''}</div>`:''}
-      </td>
-      <td>${statusPill(r.status)}</td>
+      <td><div class="ititle">${r.title}</div>${r.desc?`<div class="idesc">${r.desc.slice(0,180)}${r.desc.length>180?'…':''}</div>`:''}</td>
+      <td>${sp(r.status)}</td>
       <td><div class="own">${r.owner}</div></td>
-      <td><div class="due ${dueCls(r.due)}">${fmtDate(r.due)}</div></td>
+      <td><div class="due ${dc(r.due)}">${fd(r.due)}</div></td>
       <td><div class="p2g">${(r.p2g||'—').slice(0,180)}${r.p2g&&r.p2g.length>180?'…':''}</div></td>
     </tr>`;
   }).join('');
 }
 
 function renderRisks(){
-  const all = DATA.filter(r =>
-    r.status !== 'Closed' && (
-      r.type === 'Risk' ||
-      (r.id||'').toLowerCase().startsWith('risk_') ||
-      (!r.type && /^_\d+$/.test(r.id||''))
-    )
-  ).sort((a,b) => b.rating - a.rating);
-
-  // KPIs
-  const fn = (lo,hi) => all.filter(r => r.rating >= lo && (hi==null||r.rating < hi)).length;
-  document.getElementById('k-crit').textContent  = fn(16,null);
-  document.getElementById('k-high').textContent  = fn(12,16);
-  document.getElementById('k-med').textContent   = fn(6,12);
-  document.getElementById('k-low').textContent   = fn(0,6);
-  document.getElementById('k-total').textContent = all.length;
-  document.getElementById('cnt-risk').textContent = all.length;
-
-  let filtered = FILTERS.risk === 'all' ? all : all.filter(r => r.status === FILTERS.risk);
-  const q_risk = searchVal('risk');
-  if(q_risk) filtered = filtered.filter(r => matchesSearch(r, q_risk));
-  document.getElementById('risk-ct').textContent = `${filtered.length} of ${all.length} risks`;
-
-  const tb = document.getElementById('tb-risk');
-  if(!filtered.length){
-    tb.innerHTML = `<tr><td colspan="7"><div class="empty-txt">No risks match this filter</div></td></tr>`;
-    return;
-  }
-
-  tb.innerHTML = filtered.map((r, i) => {
-    const rank  = i + 1;
-    const rCls  = ratingCls(r.rating);
-    const rLbl  = ratingLabel(r.rating);
-    const rVal  = r.rating > 0 ? r.rating : '—';
-    const formula = r.impact > 0 && r.lik > 0 ? `${r.impact} × ${r.lik}` : '';
-
-    return `<tr>
+  const all=DATA.filter(r=>r.status!=='Closed'&&(r.type==='Risk'||(r.id||'').toLowerCase().startsWith('risk_')||(!r.type&&/^_\d+$/.test(r.id||'')))).sort((a,b)=>b.rating-a.rating);
+  document.getElementById('k-crit').textContent=all.filter(r=>r.rating>=16).length;
+  document.getElementById('k-high').textContent=all.filter(r=>r.rating>=12&&r.rating<16).length;
+  document.getElementById('k-med').textContent=all.filter(r=>r.rating>=6&&r.rating<12).length;
+  document.getElementById('k-low').textContent=all.filter(r=>r.rating<6).length;
+  document.getElementById('k-total').textContent=all.length;
+  document.getElementById('cnt-risk').textContent=all.length;
+  let f=F.risk==='all'?all:all.filter(r=>r.status===F.risk);
+  const q=sq('risk');if(q)f=f.filter(r=>ok(r,q));
+  document.getElementById('ct-risk').textContent=`${f.length} of ${all.length}`;
+  const tb=document.getElementById('tb-risk');
+  if(!f.length){tb.innerHTML=`<tr><td colspan="7"><span class="empty">No risks match</span></td></tr>`;return}
+  tb.innerHTML=f.map((r,i)=>{
+    const rank=i+1,rv=r.rating>0?r.rating:'—',fm=r.impact>0&&r.lik>0?`${r.impact} × ${r.lik}`:'';
+    return`<tr>
       <td><div class="rank${rank<=3?' top':''}">${rank}</div></td>
-      <td>
-        <div class="rb-wrap">
-          <div class="rb ${rCls}">${rVal}</div>
-          <div class="rb-meta">
-            <div class="rb-label">${rLbl}</div>
-            ${formula ? `<div class="rb-formula">${formula}</div>` : ''}
-          </div>
-        </div>
-      </td>
-      <td>
-        <div style="margin-bottom:4px">
-          <span class="iid">${r.id}</span>${r.ref ? `<span class="iref">${r.ref}</span>` : ''}
-        </div>
-        <div class="ititle">${r.title}</div>
-        ${r.desc ? `<div class="idesc">${r.desc.slice(0,240)}${r.desc.length>240?'…':''}</div>` : ''}
-        ${r.service ? `<div class="isvc">📍 ${r.service.slice(0,90)}</div>` : ''}
-      </td>
-      <td>${statusPill(r.status)}</td>
+      <td><div class="rb-wrap"><div class="rb ${rc(r.rating)}">${rv}</div><div class="rb-meta"><div class="rb-label">${rl(r.rating)}</div>${fm?`<div class="rb-formula">${fm}</div>`:''}</div></div></td>
+      <td><div style="margin-bottom:4px"><span class="iid">${r.id}</span>${r.ref?`<span class="iref">${r.ref}</span>`:''}</div><div class="ititle">${r.title}</div>${r.desc?`<div class="idesc">${r.desc.slice(0,240)}${r.desc.length>240?'…':''}</div>`:''}${r.service?`<div class="isvc">📍 ${r.service.slice(0,90)}</div>`:''}</td>
+      <td>${sp(r.status)}</td>
       <td><div class="own">${r.owner}</div></td>
-      <td><div class="due ${dueCls(r.due)}">${fmtDate(r.due)}</div></td>
+      <td><div class="due ${dc(r.due)}">${fd(r.due)}</div></td>
       <td><div class="p2g">${(r.p2g||'—').slice(0,220)}${r.p2g&&r.p2g.length>220?'…':''}</div></td>
     </tr>`;
   }).join('');
 }
 
-function renderGeneral(type){
-  const typeMap = {
-    issue:    ['Issue'],
-    action:   ['Action Item'],
-    decision: ['Decision'],
-  };
-
-  const all = DATA.filter(r =>
-    typeMap[type].includes(r.type) && r.status !== 'Closed'
-  ).sort((a,b) => {
-    const ord = s => s==='Active'?0:s==='Ongoing Mitigation'?1:2;
-    const d = ord(a.status) - ord(b.status);
-    if(d !== 0) return d;
-    if(!a.due && !b.due) return 0;
-    if(!a.due) return 1;
-    if(!b.due) return -1;
-    return new Date(a.due) - new Date(b.due);
-  });
-
-  document.getElementById('cnt-'+type).textContent = all.length;
-
-  let filtered = FILTERS[type] === 'all' ? all : all.filter(r => r.status === FILTERS[type]);
-  const q_gen = searchVal(type);
-  if(q_gen) filtered = filtered.filter(r => matchesSearch(r, q_gen));
-  document.getElementById(type+'-ct').textContent = `${filtered.length} of ${all.length} items`;
-
-  const tb = document.getElementById('tb-'+type);
-  if(!filtered.length){
-    tb.innerHTML = `<tr><td colspan="6"><div class="empty-txt">No items match this filter</div></td></tr>`;
-    return;
-  }
-
-  tb.innerHTML = filtered.map(r => `<tr>
-    <td>
-      <div class="iid">${r.id}</div>
-      ${r.ref ? `<div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${r.ref}</div>` : ''}
-    </td>
-    <td>
-      <div class="ititle">${r.title}</div>
-      ${r.desc ? `<div class="idesc">${r.desc.slice(0,220)}${r.desc.length>220?'…':''}</div>` : ''}
-      ${r.service ? `<div class="isvc">📍 ${r.service.slice(0,90)}</div>` : ''}
-    </td>
-    <td>${statusPill(r.status)}</td>
+const TMAP={issue:'Issue',act:'Action Item',dec:'Decision'};
+function renderG(tab){
+  const all=sortSD(DATA.filter(r=>r.type===TMAP[tab]&&r.status!=='Closed'));
+  document.getElementById('cnt-'+tab).textContent=all.length;
+  let f=F[tab]==='all'?all:all.filter(r=>r.status===F[tab]);
+  const q=sq(tab);if(q)f=f.filter(r=>ok(r,q));
+  document.getElementById('ct-'+tab).textContent=`${f.length} of ${all.length}`;
+  const tb=document.getElementById('tb-'+tab);
+  if(!f.length){tb.innerHTML=`<tr><td colspan="6"><span class="empty">No items match</span></td></tr>`;return}
+  tb.innerHTML=f.map(r=>`<tr>
+    <td><div class="iid">${r.id}</div>${r.ref?`<div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px">${r.ref}</div>`:''}</td>
+    <td><div class="ititle">${r.title}</div>${r.desc?`<div class="idesc">${r.desc.slice(0,220)}${r.desc.length>220?'…':''}</div>`:''}${r.service?`<div class="isvc">📍 ${r.service.slice(0,90)}</div>`:''}</td>
+    <td>${sp(r.status)}</td>
     <td><div class="own">${r.owner}</div></td>
-    <td><div class="due ${dueCls(r.due)}">${fmtDate(r.due)}</div></td>
+    <td><div class="due ${dc(r.due)}">${fd(r.due)}</div></td>
     <td><div class="p2g">${(r.p2g||'—').slice(0,220)}${r.p2g&&r.p2g.length>220?'…':''}</div></td>
   </tr>`).join('');
 }
 
-// ─── FETCH ─────────────────────────────────────────────────────────────────
 async function load(){
-  const syncEl = document.getElementById('last-sync');
-  if(syncEl) syncEl.textContent = 'Syncing…';
-
-  try {
-    const res = await fetch('/api/data?sheet=raid');
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    const rows = json.rows || [];
-
-    DATA = rows.map(r => ({
-      id:      r['Unique Identifier'] || '',
-      ref:     r['Plan Reference']    || '',
-      title:   r['Title']             || '(no title)',
-      type:    r['Type']              || '',
-      desc:    r['Description']       || '',
-      due:     r['Due Date']          || '',
-      p2g:     r['Path to Green']     || '',
-      status:  r['Status']            || 'Active',
-      owner:   r['Owner']             || '—',
-      service: r['Impacted Service']  || '',
-      impact:  parseFloat(r['Impact'])      || 0,
-      lik:     parseFloat(r['Likelihood'])  || 0,
-      rating:  parseRating(r['Rating']),
+  const el=document.getElementById('last-sync');
+  if(el)el.textContent='Syncing…';
+  try{
+    const res=await fetch('/api/data?sheet=raid');
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const json=await res.json();
+    DATA=(json.rows||[]).map(r=>({
+      id:r['Unique Identifier']||'',ref:r['Plan Reference']||'',
+      title:r['Title']||'(no title)',type:r['Type']||'',
+      desc:r['Description']||'',due:r['Due Date']||'',
+      p2g:r['Path to Green']||'',status:r['Status']||'Active',
+      owner:r['Owner']||'—',service:r['Impacted Service']||'',
+      impact:parseFloat(r['Impact'])||0,lik:parseFloat(r['Likelihood'])||0,
+      rating:pr(r['Rating']),
     }));
-
-    // Render all tabs
-    renderAll();
-    renderRisks();
-    renderGeneral('issue');
-    renderGeneral('action');
-    renderGeneral('decision');
-
-    const now = new Date();
-    const ts  = now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})
-              + ' '
-              + now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})
-              + ' WAT';
-    if(syncEl) syncEl.textContent = ts;
-    console.log('✓ RAID loaded', DATA.length, 'items');
-
-  } catch(err){
-    console.error('Load failed:', err);
-    if(syncEl) syncEl.textContent = 'Sync failed';
-    ['tb-risk','tb-issue','tb-action','tb-decision'].forEach(id => {
-      const tb = document.getElementById(id);
-      if(tb) tb.innerHTML = `<tr><td colspan="7"><div class="empty-txt">⚠ ${err.message} — check /api/data?sheet=raid</div></td></tr>`;
-    });
+    renderAll();renderRisks();renderG('issue');renderG('act');renderG('dec');
+    const now=new Date();
+    if(el)el.textContent=now.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'})+' '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'UTC'})+' WAT';
+    console.log('✓ RAID loaded',DATA.length,'items');
+  }catch(err){
+    console.error(err);
+    if(el)el.textContent='Sync failed';
   }
 }
-
 load();
-setInterval(load, 30 * 60 * 1000);
+setInterval(load,30*60*1000);
 </script>
 </body>
 </html>
